@@ -1,0 +1,32 @@
+.chore-list {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.chore-list-title {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.chore-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chore-list-empty {
+  background: white;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.chore-list-empty p {
+  margin: 0;
+  font-size: 14px;
+}

@@ -1,0 +1,105 @@
+.chore-item {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.chore-item:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.chore-item.completed {
+  background: var(--lighter-bg);
+  opacity: 0.7;
+}
+
+.chore-item.completed .chore-item-title h3 {
+  text-decoration: line-through;
+  color: var(--text-light);
+}
+
+.chore-item.overdue {
+  border-left: 4px solid var(--danger-color);
+}
+
+.chore-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chore-item-title h3 {
+  font-size: 16px;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.chore-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.chore-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-complete,
+.btn-delete {
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: white;
+  border: 1px solid var(--border-color);
+}
+
+.btn-complete {
+  color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-complete:hover {
+  background: var(--success-color);
+  color: white;
+}
+
+.btn-delete {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-delete:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.chore-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chore-assigned,
+.chore-date,
+.chore-recurring {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

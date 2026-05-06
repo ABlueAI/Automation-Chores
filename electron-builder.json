@@ -1,0 +1,23 @@
+{
+  "build": {
+    "appId": "com.chortracker.app",
+    "productName": "Office Chore Tracker",
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}

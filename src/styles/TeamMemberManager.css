@@ -1,0 +1,91 @@
+.team-member-manager {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.team-member-manager h3 {
+  font-size: 14px;
+  margin: 0 0 12px 0;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.add-member-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.member-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.btn-add-member {
+  padding: 8px 12px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-member:hover {
+  background: var(--primary-dark);
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: var(--lighter-bg);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.member-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.btn-remove-member {
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-member:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.no-members {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 12px;
+  padding: 12px 0;
+}
