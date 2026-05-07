@@ -8,6 +8,8 @@ interface ChoreListProps {
   teamMembers: TeamMember[]
   onComplete: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (chore: Chore) => void
+  onAddNote: (id: string, note: string) => void
   title?: string
   emptyMessage?: string
 }
@@ -17,12 +19,15 @@ export const ChoreList: React.FC<ChoreListProps> = ({
   teamMembers,
   onComplete,
   onDelete,
+  onEdit,
+  onAddNote,
   title,
   emptyMessage = 'No chores for this date',
 }) => {
   if (chores.length === 0) {
     return (
       <div className="chore-list-empty">
+        <div className="empty-icon">📋</div>
         <p>{emptyMessage}</p>
       </div>
     )
@@ -39,6 +44,8 @@ export const ChoreList: React.FC<ChoreListProps> = ({
             teamMembers={teamMembers}
             onComplete={onComplete}
             onDelete={onDelete}
+            onEdit={onEdit}
+            onAddNote={onAddNote}
           />
         ))}
       </div>

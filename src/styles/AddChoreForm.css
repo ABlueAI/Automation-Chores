@@ -7,115 +7,149 @@
   justify-content: center;
   z-index: 1000;
   padding: 16px;
+  backdrop-filter: blur(2px);
 }
 
 .add-chore-form {
-  background: white;
-  border-radius: 8px;
+  background: var(--card-bg);
+  border-radius: 12px;
   box-shadow: var(--shadow-lg);
-  max-width: 500px;
+  max-width: 520px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
 }
 
 .form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
-  background: white;
+  background: var(--card-bg);
+  z-index: 1;
+  border-radius: 12px 12px 0 0;
 }
 
 .form-header h2 {
-  font-size: 20px;
+  font-size: 18px;
   margin: 0;
+  color: var(--text-primary);
 }
 
 .btn-close {
   background: none;
   border: none;
-  padding: 4px;
+  padding: 6px;
   color: var(--text-secondary);
   cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
 }
 
 .btn-close:hover {
   color: var(--text-primary);
+  background: var(--lighter-bg);
+  transform: none;
 }
 
 form {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .form-group label {
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-  padding: 10px 12px;
+  padding: 9px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 70px;
   font-family: inherit;
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--border-color);
-  margin-top: 12px;
+  margin-top: 4px;
 }
 
 .btn-cancel {
-  padding: 10px 16px;
+  padding: 9px 16px;
   background: var(--lighter-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-cancel:hover {
   background: var(--border-color);
+  transform: none;
 }
 
 .btn-submit {
-  padding: 10px 16px;
+  padding: 9px 18px;
   background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-submit:hover {
   background: var(--primary-dark);
+  box-shadow: var(--shadow-md);
 }

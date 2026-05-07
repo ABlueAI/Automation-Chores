@@ -1,21 +1,23 @@
-import { useState, useMemo } from 'react'
-import { useChores } from '../context/ChoreContext'
+import { useState, useMemo, useEffect } from 'react'
+import { useChores, Chore } from '../context/ChoreContext'
 import { useNotifications } from '../context/NotificationContext'
 import { ChoreList } from '../components/ChoreList'
 import { AddChoreForm } from '../components/AddChoreForm'
 import { TeamMemberManager } from '../components/TeamMemberManager'
-import { DatePicker } from '../components/DatePicker'
+import { CalendarView } from '../components/CalendarView'
+import { SearchFilter, FilterState, DEFAULT_FILTERS } from '../components/SearchFilter'
 import { NotificationContainer } from '../components/NotificationContainer'
 import { getDateString, groupChoresByDate } from '../utils/dateUtils'
 import { getCompletionStats } from '../utils/choreUtils'
 import '../styles/ChoreApp.css'
-import { Plus, Users, Calendar } from 'lucide-react'
+import { Plus, Users, Download, Moon, Sun, Calendar } from 'lucide-react'
 
 export default function ChoreApp() {
   const {
     chores,
     teamMembers,
     addChore,
+    updateChore,
     deleteChore,
     completeChore,
     addTeamMember,
@@ -29,25 +31,75 @@ export default function ChoreApp() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showTeamManager, setShowTeamManager] = useState(false)
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'all'>('day')
+  const [editingChore, setEditingChore] = useState<Chore | null>(null)
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true'
+  })
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? 'dark' : ''
+    localStorage.setItem('darkMode', String(darkMode))
+  }, [darkMode])
 
   const choresForSelectedDate = getChoresForDate(selectedDate)
   const stats = useMemo(() => getCompletionStats(chores), [chores])
 
-  const handleAddChore = (choreData: any) => {
-    try {
-      addChore(choreData)
-      addNotification(
-        `Chore "${choreData.title}" added successfully!`,
-        'success'
-      )
-      setShowAddForm(false)
-    } catch (error) {
-      addNotification('Failed to add chore', 'error')
+  const allCategories = useMemo(() => {
+    const cats = new Set(chores.map(c => c.category).filter(Boolean) as string[])
+    return Array.from(cats).sort()
+  }, [chores])
+
+  const applyFilters = (list: Chore[]): Chore[] => {
+    return list.filter(c => {
+      if (filters.search && !c.title.toLowerCase().includes(filters.search.toLowerCase()) &&
+          !(c.description || '').toLowerCase().includes(filters.search.toLowerCase())) return false
+      if (filters.status !== 'all' && c.status !== filters.status) return false
+      if (filters.priority !== 'all' && c.priority !== filters.priority) return false
+      if (filters.category !== 'all' && c.category !== filters.category) return false
+      if (filters.assigneeId !== 'all' && c.assignedTo !== filters.assigneeId) return false
+      return true
+    })
+  }
+
+  const getWeekChores = () => {
+    const result: Chore[] = []
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(selectedDate + 'T00:00:00')
+      date.setDate(date.getDate() + i)
+      result.push(...getChoresForDate(date.toISOString().split('T')[0]))
     }
+    return result
+  }
+
+  const baseChores =
+    viewMode === 'day' ? choresForSelectedDate :
+    viewMode === 'week' ? getWeekChores() :
+    chores
+
+  const displayChores = applyFilters(baseChores)
+  const choresByDate = groupChoresByDate(displayChores)
+
+  const overdueCount = useMemo(
+    () => chores.filter(c => c.status === 'pending' && new Date(c.dueDate + 'T00:00:00') < new Date(getDateString(new Date()) + 'T00:00:00')).length,
+    [chores]
+  )
+
+  const handleAddChore = (choreData: Omit<Chore, 'id' | 'createdAt'>) => {
+    addChore(choreData)
+    addNotification(`"${choreData.title}" added!`, 'success')
+    setShowAddForm(false)
+  }
+
+  const handleEditSubmit = (choreData: Omit<Chore, 'id' | 'createdAt'>) => {
+    if (!editingChore) return
+    updateChore(editingChore.id, choreData)
+    addNotification(`"${choreData.title}" updated!`, 'success')
+    setEditingChore(null)
   }
 
   const handleDeleteChore = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this chore?')) {
+    if (window.confirm('Delete this chore?')) {
       deleteChore(id)
       addNotification('Chore deleted', 'success')
     }
@@ -55,11 +107,16 @@ export default function ChoreApp() {
 
   const handleCompleteChore = (id: string) => {
     completeChore(id)
-    addNotification('Chore marked as complete! 🎉', 'success')
+    addNotification('Chore marked as complete!', 'success')
   }
 
-  const handleAddTeamMember = (name: string) => {
-    addTeamMember({ name })
+  const handleAddNote = (id: string, note: string) => {
+    updateChore(id, { notes: note || undefined })
+    addNotification('Note saved', 'success')
+  }
+
+  const handleAddTeamMember = (name: string, color: string) => {
+    addTeamMember({ name, color })
     addNotification(`${name} added to team`, 'success')
   }
 
@@ -71,72 +128,106 @@ export default function ChoreApp() {
     }
   }
 
-  const getWeekChores = () => {
-    const weekChores = []
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(selectedDate + 'T00:00:00')
-      date.setDate(date.getDate() + i)
-      const dateStr = date.toISOString().split('T')[0]
-      weekChores.push(...getChoresForDate(dateStr))
-    }
-    return weekChores
+  const exportToCSV = () => {
+    const headers = ['Title', 'Description', 'Due Date', 'Assigned To', 'Status', 'Priority', 'Category', 'Recurring', 'Notes', 'Created', 'Completed']
+    const rows = chores.map(c => {
+      const member = teamMembers.find(m => m.id === c.assignedTo)
+      return [
+        c.title,
+        c.description || '',
+        c.dueDate,
+        member?.name || 'Unassigned',
+        c.status,
+        c.priority || '',
+        c.category || '',
+        c.recurring?.pattern || '',
+        c.notes || '',
+        c.createdAt.split('T')[0],
+        c.completedAt ? c.completedAt.split('T')[0] : '',
+      ]
+    })
+    const csv = [headers, ...rows]
+      .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `chores-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    addNotification(`Exported ${chores.length} chores to CSV`, 'success')
   }
-
-  const displayChores =
-    viewMode === 'day'
-      ? choresForSelectedDate
-      : viewMode === 'week'
-        ? getWeekChores()
-        : chores
-
-  const choresByDate = groupChoresByDate(displayChores)
 
   return (
     <div className="chore-app">
       <NotificationContainer />
 
-      {/* Header */}
       <header className="app-header">
         <div className="header-content">
           <div className="header-title">
-            <h1>📋 Office Chore Tracker</h1>
+            <h1>Office Chore Tracker</h1>
             <div className="stats">
               <span className="stat">
-                Total: <strong>{stats.total}</strong>
+                <span className="stat-num">{stats.total}</span> Total
               </span>
               <span className="stat">
-                Completed: <strong>{stats.completed}</strong>
+                <span className="stat-num">{stats.completed}</span> Done
               </span>
               <span className="stat">
-                Progress: <strong>{stats.completionRate}%</strong>
+                <span className="stat-num">{stats.completionRate}%</span> Rate
               </span>
+              {overdueCount > 0 && (
+                <span className="stat stat-overdue">
+                  <span className="stat-num">{overdueCount}</span> Overdue
+                </span>
+              )}
             </div>
           </div>
 
           <div className="header-actions">
             <button
-              className="btn-primary"
+              className="btn-header"
+              onClick={() => setDarkMode(d => !d)}
+              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button
+              className="btn-header"
+              onClick={exportToCSV}
+              title="Export to CSV"
+              disabled={chores.length === 0}
+            >
+              <Download size={16} /> Export
+            </button>
+            <button
+              className="btn-header"
+              onClick={() => setShowTeamManager(v => !v)}
+            >
+              <Users size={16} /> Team
+            </button>
+            <button
+              className="btn-header btn-header-primary"
               onClick={() => setShowAddForm(true)}
               disabled={teamMembers.length === 0}
               title={teamMembers.length === 0 ? 'Add team members first' : 'Add new chore'}
             >
-              <Plus size={18} /> Add Chore
-            </button>
-            <button
-              className="btn-secondary"
-              onClick={() => setShowTeamManager(!showTeamManager)}
-            >
-              <Users size={18} /> Team
+              <Plus size={16} /> Add Chore
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="app-container">
-        {/* Sidebar */}
         <aside className="sidebar">
-          <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          <CalendarView
+            selectedDate={selectedDate}
+            onDateChange={date => { setSelectedDate(date); setViewMode('day') }}
+            chores={chores}
+          />
 
           <div className="view-modes">
             <h3>View</h3>
@@ -145,7 +236,7 @@ export default function ChoreApp() {
                 className={`mode-btn ${viewMode === 'day' ? 'active' : ''}`}
                 onClick={() => setViewMode('day')}
               >
-                <Calendar size={16} /> Day
+                <Calendar size={15} /> Day
               </button>
               <button
                 className={`mode-btn ${viewMode === 'week' ? 'active' : ''}`}
@@ -171,23 +262,32 @@ export default function ChoreApp() {
           )}
         </aside>
 
-        {/* Main Content Area */}
         <main className="main-content">
+          <SearchFilter
+            filters={filters}
+            onChange={setFilters}
+            teamMembers={teamMembers}
+            categories={allCategories}
+          />
+
           {viewMode === 'day' && (
             <ChoreList
-              chores={choresForSelectedDate}
+              chores={displayChores}
               teamMembers={teamMembers}
               onComplete={handleCompleteChore}
               onDelete={handleDeleteChore}
-              emptyMessage={`No chores scheduled for ${new Date(selectedDate + 'T00:00:00').toLocaleDateString()}`}
+              onEdit={setEditingChore}
+              onAddNote={handleAddNote}
+              emptyMessage={`No chores for ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`}
             />
           )}
 
           {viewMode === 'week' && (
             <div className="week-view">
-              {Object.entries(choresByDate).length === 0 ? (
+              {Object.keys(choresByDate).length === 0 ? (
                 <div className="chore-list-empty">
-                  <p>No chores scheduled for this week</p>
+                  <div className="empty-icon">📅</div>
+                  <p>No chores this week</p>
                 </div>
               ) : (
                 Object.entries(choresByDate).map(([date, dateChores]) => (
@@ -204,6 +304,8 @@ export default function ChoreApp() {
                       teamMembers={teamMembers}
                       onComplete={handleCompleteChore}
                       onDelete={handleDeleteChore}
+                      onEdit={setEditingChore}
+                      onAddNote={handleAddNote}
                     />
                   </div>
                 ))
@@ -213,24 +315,26 @@ export default function ChoreApp() {
 
           {viewMode === 'all' && (
             <ChoreList
-              chores={chores}
+              chores={displayChores}
               teamMembers={teamMembers}
               onComplete={handleCompleteChore}
               onDelete={handleDeleteChore}
-              title="All Chores"
-              emptyMessage="No chores created yet"
+              onEdit={setEditingChore}
+              onAddNote={handleAddNote}
+              title={`All Chores (${displayChores.length})`}
+              emptyMessage="No chores match your filters"
             />
           )}
         </main>
       </div>
 
-      {/* Add Chore Modal */}
-      {showAddForm && (
+      {(showAddForm || editingChore) && (
         <AddChoreForm
           teamMembers={teamMembers}
-          onSubmit={handleAddChore}
-          onCancel={() => setShowAddForm(false)}
+          onSubmit={editingChore ? handleEditSubmit : handleAddChore}
+          onCancel={() => { setShowAddForm(false); setEditingChore(null) }}
           initialDate={selectedDate}
+          editingChore={editingChore || undefined}
         />
       )}
     </div>

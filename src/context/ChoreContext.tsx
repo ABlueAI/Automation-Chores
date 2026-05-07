@@ -4,6 +4,7 @@ export interface TeamMember {
   id: string
   name: string
   email?: string
+  color?: string
 }
 
 export interface Chore {
@@ -13,6 +14,9 @@ export interface Chore {
   dueDate: string
   assignedTo: string
   status: 'pending' | 'completed'
+  priority?: 'low' | 'medium' | 'high'
+  category?: string
+  notes?: string
   recurring?: {
     pattern: 'daily' | 'weekly' | 'monthly'
     endDate?: string
@@ -38,9 +42,7 @@ const ChoreContext = createContext<ChoreContextType | undefined>(undefined)
 
 export const useChores = () => {
   const context = useContext(ChoreContext)
-  if (!context) {
-    throw new Error('useChores must be used within ChoreProvider')
-  }
+  if (!context) throw new Error('useChores must be used within ChoreProvider')
   return context
 }
 
@@ -48,91 +50,59 @@ export const ChoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [chores, setChores] = useState<Chore[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
 
-  // Load from localStorage on mount
   useEffect(() => {
     const savedChores = localStorage.getItem('chores')
     const savedMembers = localStorage.getItem('teamMembers')
-    
     if (savedChores) setChores(JSON.parse(savedChores))
     if (savedMembers) setTeamMembers(JSON.parse(savedMembers))
   }, [])
 
-  // Save to localStorage when chores change
   useEffect(() => {
     localStorage.setItem('chores', JSON.stringify(chores))
   }, [chores])
 
-  // Save to localStorage when team members change
   useEffect(() => {
     localStorage.setItem('teamMembers', JSON.stringify(teamMembers))
   }, [teamMembers])
 
   const generateRecurringChores = (baseChore: Chore, count: number = 12): Chore[] => {
     if (!baseChore.recurring) return []
-    
-    const chores: Chore[] = []
+    const result: Chore[] = []
     const startDate = new Date(baseChore.dueDate)
-    
     for (let i = 1; i <= count; i++) {
       const newDate = new Date(startDate)
-      
-      if (baseChore.recurring.pattern === 'daily') {
-        newDate.setDate(newDate.getDate() + i)
-      } else if (baseChore.recurring.pattern === 'weekly') {
-        newDate.setDate(newDate.getDate() + i * 7)
-      } else if (baseChore.recurring.pattern === 'monthly') {
-        newDate.setMonth(newDate.getMonth() + i)
-      }
-      
-      if (baseChore.recurring.endDate && newDate > new Date(baseChore.recurring.endDate)) {
-        break
-      }
-      
-      chores.push({
+      if (baseChore.recurring.pattern === 'daily') newDate.setDate(newDate.getDate() + i)
+      else if (baseChore.recurring.pattern === 'weekly') newDate.setDate(newDate.getDate() + i * 7)
+      else if (baseChore.recurring.pattern === 'monthly') newDate.setMonth(newDate.getMonth() + i)
+      if (baseChore.recurring.endDate && newDate > new Date(baseChore.recurring.endDate)) break
+      result.push({
         ...baseChore,
         id: `${baseChore.id}-recur-${i}`,
         dueDate: newDate.toISOString().split('T')[0],
       })
     }
-    
-    return chores
+    return result
   }
 
   const addChore = (chore: Omit<Chore, 'id' | 'createdAt'>) => {
     const id = Date.now().toString()
-    const newChore: Chore = {
-      ...chore,
-      id,
-      createdAt: new Date().toISOString(),
-    }
-    
-    setChores(prev => [...prev, newChore])
-    
-    // Add recurring instances
-    if (chore.recurring) {
-      const recurring = generateRecurringChores(newChore)
-      setChores(prev => [...prev, ...recurring])
-    }
+    const newChore: Chore = { ...chore, id, createdAt: new Date().toISOString() }
+    const recurring = chore.recurring ? generateRecurringChores(newChore) : []
+    setChores(prev => [...prev, newChore, ...recurring])
   }
 
   const updateChore = (id: string, updates: Partial<Chore>) => {
-    setChores(prev =>
-      prev.map(chore =>
-        chore.id === id ? { ...chore, ...updates } : chore
-      )
-    )
+    setChores(prev => prev.map(c => (c.id === id ? { ...c, ...updates } : c)))
   }
 
   const deleteChore = (id: string) => {
-    setChores(prev => prev.filter(chore => chore.id !== id))
+    setChores(prev => prev.filter(c => c.id !== id))
   }
 
   const completeChore = (id: string) => {
     setChores(prev =>
-      prev.map(chore =>
-        chore.id === id
-          ? { ...chore, status: 'completed', completedAt: new Date().toISOString() }
-          : chore
+      prev.map(c =>
+        c.id === id ? { ...c, status: 'completed', completedAt: new Date().toISOString() } : c
       )
     )
   }
@@ -143,22 +113,14 @@ export const ChoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }
 
   const removeTeamMember = (id: string) => {
-    setTeamMembers(prev => prev.filter(member => member.id !== id))
-    // Remove assignments to this member
-    setChores(prev =>
-      prev.map(chore =>
-        chore.assignedTo === id ? { ...chore, assignedTo: '' } : chore
-      )
-    )
+    setTeamMembers(prev => prev.filter(m => m.id !== id))
+    setChores(prev => prev.map(c => (c.assignedTo === id ? { ...c, assignedTo: '' } : c)))
   }
 
-  const getChoresForDate = (date: string): Chore[] => {
-    return chores.filter(chore => chore.dueDate === date)
-  }
+  const getChoresForDate = (date: string): Chore[] => chores.filter(c => c.dueDate === date)
 
-  const getChoresForMember = (memberId: string): Chore[] => {
-    return chores.filter(chore => chore.assignedTo === memberId)
-  }
+  const getChoresForMember = (memberId: string): Chore[] =>
+    chores.filter(c => c.assignedTo === memberId)
 
   return (
     <ChoreContext.Provider

@@ -5,23 +5,44 @@
 }
 
 :root {
-  --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  --secondary-color: #8b5cf6;
+  --primary-color: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --secondary-color: #0ea5e9;
   --success-color: #10b981;
   --danger-color: #ef4444;
   --warning-color: #f59e0b;
   --info-color: #3b82f6;
-  --light-bg: #f9fafb;
-  --lighter-bg: #f3f4f6;
-  --border-color: #e5e7eb;
+  --light-bg: #f0f7ff;
+  --lighter-bg: #e8f0fe;
+  --card-bg: #ffffff;
+  --border-color: #dbeafe;
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-light: #9ca3af;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 3px 0 rgba(37, 99, 235, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(37, 99, 235, 0.12);
+  --shadow-lg: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme='dark'] {
+  --primary-color: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #93c5fd;
+  --secondary-color: #38bdf8;
+  --success-color: #34d399;
+  --danger-color: #f87171;
+  --warning-color: #fbbf24;
+  --light-bg: #0f172a;
+  --lighter-bg: #1e293b;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-light: #64748b;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -32,6 +53,7 @@ body {
   background-color: var(--light-bg);
   color: var(--text-primary);
   line-height: 1.5;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html,
@@ -66,6 +88,8 @@ select {
   padding: 8px 12px;
   font-size: 14px;
   transition: all 0.2s ease;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
 }
 
 input:focus,
@@ -73,7 +97,7 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 h1,
@@ -91,7 +115,7 @@ h6 {
 .btn-success,
 .btn-danger {
   padding: 10px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   display: inline-flex;
