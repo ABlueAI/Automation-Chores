@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ChoreProvider } from './context/ChoreContext'
 import { NotificationProvider } from './context/NotificationContext'
 import ChoreApp from './pages/ChoreApp'

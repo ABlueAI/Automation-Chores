@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useChores } from '../context/ChoreContext'
 import { useNotifications } from '../context/NotificationContext'
 import { ChoreList } from '../components/ChoreList'

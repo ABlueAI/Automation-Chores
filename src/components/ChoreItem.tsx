@@ -9,7 +9,6 @@ interface ChoreItemProps {
   teamMembers: TeamMember[]
   onComplete: (id: string) => void
   onDelete: (id: string) => void
-  onEdit?: (chore: Chore) => void
 }
 
 export const ChoreItem: React.FC<ChoreItemProps> = ({
@@ -17,7 +16,6 @@ export const ChoreItem: React.FC<ChoreItemProps> = ({
   teamMembers,
   onComplete,
   onDelete,
-  onEdit,
 }) => {
   const isOverdueChore = isOverdue(chore.dueDate, chore.status)
   const memberName = getMemberName(chore.assignedTo, teamMembers)
