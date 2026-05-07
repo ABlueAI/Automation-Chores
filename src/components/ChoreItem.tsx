@@ -125,6 +125,16 @@ export const ChoreItem: React.FC<ChoreItemProps> = ({
               ✓ {new Date(chore.completedAt).toLocaleDateString()}
             </span>
           )}
+          {chore.status === 'completed' && chore.tokensEarned != null && (
+            <span className="chore-tokens-earned" title={`${chore.tokensEarned} token${chore.tokensEarned !== 1 ? 's' : ''} earned`}>
+              {'⭐'.repeat(chore.tokensEarned)} +{chore.tokensEarned}
+            </span>
+          )}
+          {chore.startTime && chore.status === 'pending' && (
+            <span className="chore-start-time" title="Scheduled start time">
+              🕐 {chore.startTime}{chore.estimatedMinutes ? ` · ${chore.estimatedMinutes}min` : ''}
+            </span>
+          )}
           <button
             className={`btn-notes-toggle ${showNotes ? 'active' : ''} ${chore.notes ? 'has-notes' : ''}`}
             onClick={() => setShowNotes(v => !v)}

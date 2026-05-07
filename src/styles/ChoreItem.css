@@ -213,11 +213,31 @@
 
 .chore-date,
 .chore-recurring,
-.chore-completed-at {
+.chore-completed-at,
+.chore-start-time {
   display: flex;
   align-items: center;
   gap: 4px;
   color: var(--text-light);
+}
+
+.chore-tokens-earned {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #d97706;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+[data-theme='dark'] .chore-tokens-earned {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.3);
 }
 
 .btn-notes-toggle {

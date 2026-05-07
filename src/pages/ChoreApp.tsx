@@ -7,12 +7,17 @@ import { TeamMemberManager } from '../components/TeamMemberManager'
 import { CalendarView } from '../components/CalendarView'
 import { SearchFilter, FilterState, DEFAULT_FILTERS } from '../components/SearchFilter'
 import { NotificationContainer } from '../components/NotificationContainer'
+import { ConfettiCelebration } from '../components/ConfettiCelebration'
 import { getDateString, groupChoresByDate } from '../utils/dateUtils'
 import { getCompletionStats } from '../utils/choreUtils'
 import '../styles/ChoreApp.css'
-import { Plus, Users, Download, Moon, Sun, Calendar } from 'lucide-react'
+import { Plus, Users, Download, Moon, Sun, Calendar, ShoppingCart } from 'lucide-react'
 
-export default function ChoreApp() {
+interface Props {
+  onGoToGrocery: () => void
+}
+
+export default function ChoreApp({ onGoToGrocery }: Props) {
   const {
     chores,
     teamMembers,
@@ -33,6 +38,7 @@ export default function ChoreApp() {
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'all'>('day')
   const [editingChore, setEditingChore] = useState<Chore | null>(null)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [celebration, setCelebration] = useState<{ tokens: number; memberName: string } | null>(null)
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true'
   })
@@ -106,8 +112,10 @@ export default function ChoreApp() {
   }
 
   const handleCompleteChore = (id: string) => {
-    completeChore(id)
-    addNotification('Chore marked as complete!', 'success')
+    const chore = chores.find(c => c.id === id)
+    const member = teamMembers.find(m => m.id === chore?.assignedTo)
+    const tokens = completeChore(id)
+    setCelebration({ tokens, memberName: member?.name || '' })
   }
 
   const handleAddNote = (id: string, note: string) => {
@@ -202,6 +210,13 @@ export default function ChoreApp() {
               disabled={chores.length === 0}
             >
               <Download size={16} /> Export
+            </button>
+            <button
+              className="btn-header"
+              onClick={onGoToGrocery}
+              title="Go to Grocery List"
+            >
+              <ShoppingCart size={16} /> Grocery
             </button>
             <button
               className="btn-header"
@@ -327,6 +342,14 @@ export default function ChoreApp() {
           )}
         </main>
       </div>
+
+      {celebration && (
+        <ConfettiCelebration
+          tokens={celebration.tokens}
+          memberName={celebration.memberName}
+          onDone={() => setCelebration(null)}
+        />
+      )}
 
       {(showAddForm || editingChore) && (
         <AddChoreForm

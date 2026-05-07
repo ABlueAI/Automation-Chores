@@ -11,6 +11,7 @@ export const CATEGORIES = [
   'Common Area',
   'Outdoor',
   'Equipment',
+  'Groceries',
   'Other',
 ]
 
@@ -38,6 +39,8 @@ export const AddChoreForm: React.FC<AddChoreFormProps> = ({
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | ''>('')
   const [category, setCategory] = useState('')
   const [notes, setNotes] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [estimatedMinutes, setEstimatedMinutes] = useState('')
   const [recurringPattern, setRecurringPattern] = useState<'daily' | 'weekly' | 'monthly' | ''>('')
   const [recurringEndDate, setRecurringEndDate] = useState('')
 
@@ -50,6 +53,8 @@ export const AddChoreForm: React.FC<AddChoreFormProps> = ({
       setPriority(editingChore.priority || '')
       setCategory(editingChore.category || '')
       setNotes(editingChore.notes || '')
+      setStartTime(editingChore.startTime || '')
+      setEstimatedMinutes(editingChore.estimatedMinutes ? String(editingChore.estimatedMinutes) : '')
       setRecurringPattern(editingChore.recurring?.pattern || '')
       setRecurringEndDate(editingChore.recurring?.endDate || '')
     }
@@ -72,6 +77,8 @@ export const AddChoreForm: React.FC<AddChoreFormProps> = ({
       dueDate,
       assignedTo,
       status: editingChore?.status || 'pending',
+      startTime: startTime || undefined,
+      estimatedMinutes: estimatedMinutes ? parseInt(estimatedMinutes) : undefined,
       priority: priority || undefined,
       category: category || undefined,
       notes: notes.trim() || undefined,
@@ -141,6 +148,30 @@ export const AddChoreForm: React.FC<AddChoreFormProps> = ({
                 <option value="medium">🟡 Medium</option>
                 <option value="low">🟢 Low</option>
               </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="startTime">Start Time</label>
+              <input
+                id="startTime"
+                type="time"
+                value={startTime}
+                onChange={e => setStartTime(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="estimatedMinutes">Duration (min)</label>
+              <input
+                id="estimatedMinutes"
+                type="number"
+                min="1"
+                max="1440"
+                value={estimatedMinutes}
+                onChange={e => setEstimatedMinutes(e.target.value)}
+                placeholder="e.g. 30"
+              />
             </div>
           </div>
 

@@ -82,6 +82,9 @@ export const TeamMemberManager: React.FC<TeamMemberManagerProps> = ({
                 style={{ background: member.color || '#94a3b8' }}
               />
               <span className="member-name">{member.name}</span>
+              <span className="member-tokens" title="Total tokens earned">
+                ⭐ {member.tokens ?? 0}
+              </span>
               <button
                 className="btn-remove-member"
                 onClick={() => onRemove(member.id)}

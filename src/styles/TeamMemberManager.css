@@ -116,6 +116,21 @@
   color: var(--text-primary);
 }
 
+.member-tokens {
+  font-size: 11px;
+  font-weight: 700;
+  color: #d97706;
+  background: #fef3c7;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .member-tokens {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fde68a;
+}
+
 .btn-remove-member {
   padding: 3px 6px;
   background: none;
