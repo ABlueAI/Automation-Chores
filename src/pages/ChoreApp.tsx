@@ -21,6 +21,7 @@ export default function ChoreApp({ onGoToGrocery }: Props) {
   const {
     chores,
     teamMembers,
+    loading,
     addChore,
     updateChore,
     deleteChore,
@@ -167,6 +168,14 @@ export default function ChoreApp({ onGoToGrocery }: Props) {
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
     addNotification(`Exported ${chores.length} chores to CSV`, 'success')
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '16px', color: 'var(--text-secondary)' }}>
+        Loading chores...
+      </div>
+    )
   }
 
   return (

@@ -12,20 +12,21 @@
     "electron-build": "npm run build && electron-builder"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.3",
+    "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "lucide-react": "^0.294.0"
+    "react-router-dom": "^6.20.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
+    "concurrently": "^8.2.2",
     "electron": "^27.0.0",
     "electron-builder": "^24.6.4",
-    "concurrently": "^8.2.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
     "wait-on": "^7.0.1"
   }
 }

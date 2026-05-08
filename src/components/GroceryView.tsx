@@ -10,7 +10,7 @@ interface Props {
 }
 
 const GroceryView: React.FC<Props> = ({ onGoToChores }) => {
-  const { items, addItem, removeItem, toggleItem, clearChecked, clearAll } = useGrocery()
+  const { items, loading, addItem, removeItem, toggleItem, clearChecked, clearAll } = useGrocery()
 
   const [nameInput, setNameInput] = useState('')
   const [qtyInput, setQtyInput] = useState('')
@@ -63,6 +63,14 @@ const GroceryView: React.FC<Props> = ({ onGoToChores }) => {
 
   const checkedCount = items.filter(i => i.checked).length
   const totalCount = items.length
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '16px', color: 'var(--text-secondary)' }}>
+        Loading grocery list...
+      </div>
+    )
+  }
 
   return (
     <div className="grocery-app">
