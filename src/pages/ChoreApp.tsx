@@ -11,13 +11,14 @@ import { ConfettiCelebration } from '../components/ConfettiCelebration'
 import { getDateString, groupChoresByDate } from '../utils/dateUtils'
 import { getCompletionStats } from '../utils/choreUtils'
 import '../styles/ChoreApp.css'
-import { Plus, Users, Download, Moon, Sun, Calendar, ShoppingCart } from 'lucide-react'
+import { Plus, Users, Download, Moon, Sun, Calendar, ShoppingCart, Sprout } from 'lucide-react'
 
 interface Props {
   onGoToGrocery: () => void
+  onGoToFarm: () => void
 }
 
-export default function ChoreApp({ onGoToGrocery }: Props) {
+export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
   const {
     chores,
     teamMembers,
@@ -219,6 +220,13 @@ export default function ChoreApp({ onGoToGrocery }: Props) {
               disabled={chores.length === 0}
             >
               <Download size={16} /> Export
+            </button>
+            <button
+              className="btn-header"
+              onClick={onGoToFarm}
+              title="Go to Our Farm"
+            >
+              <Sprout size={16} /> Farm
             </button>
             <button
               className="btn-header"

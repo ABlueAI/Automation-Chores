@@ -1,0 +1,249 @@
+.farm-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+}
+
+/* ── Header ── */
+.farm-header {
+  background: linear-gradient(135deg, #2d6a2d 0%, #3d8b3d 100%);
+  padding: 0 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.farm-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.farm-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.btn-farm-back,
+.btn-farm-play {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn-farm-back {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+.btn-farm-back:hover {
+  background: rgba(255,255,255,0.25);
+  transform: none;
+}
+
+.btn-farm-play {
+  background: #fbbf24;
+  color: #1a1a00;
+}
+.btn-farm-play:hover {
+  background: #f59e0b;
+  transform: none;
+}
+
+/* ── Scene ── */
+.farm-scene {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(180deg, #87b5e8 0%, #b8d8f0 45%, #cde8a0 80%, #7dba4d 100%);
+  overflow: hidden;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Clouds */
+.farm-clouds {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 120px;
+  pointer-events: none;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255,255,255,0.82);
+  border-radius: 40px;
+  height: 22px;
+  animation: cloudDrift linear infinite;
+}
+.cloud::before {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.82);
+  border-radius: 50%;
+  width: 46%;
+  height: 220%;
+  top: -60%;
+  left: 27%;
+}
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.82);
+  border-radius: 50%;
+  width: 32%;
+  height: 170%;
+  top: -30%;
+  left: 10%;
+}
+.cloud-1 { width: 100px; top: 20px; left: 8%;  animation-duration: 60s; animation-delay: 0s; }
+.cloud-2 { width: 72px;  top: 38px; left: 40%; animation-duration: 80s; animation-delay: -25s; }
+.cloud-3 { width: 120px; top: 12px; left: 70%; animation-duration: 70s; animation-delay: -40s; }
+
+@keyframes cloudDrift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-1400px); }
+}
+
+/* Fence */
+.farm-fence-row {
+  position: absolute;
+  bottom: 220px;
+  left: 0; right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.farm-fence-svg {
+  width: 100%;
+  max-width: 900px;
+}
+
+/* Animals area */
+.farm-animals-area {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 60px;
+  padding: 0 40px 60px;
+}
+
+/* Animal card */
+.animal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.animal-card:active .cat-svg {
+  transform: scale(0.96);
+}
+
+.cat-svg {
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2));
+}
+
+.cat-svg.petting {
+  animation: catBounce 0.5s ease;
+}
+
+@keyframes catBounce {
+  0%   { transform: translateY(0) scale(1); }
+  25%  { transform: translateY(-14px) scale(1.06); }
+  55%  { transform: translateY(-6px) scale(1.03); }
+  75%  { transform: translateY(-10px) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Floating hearts */
+.floating-heart {
+  position: absolute;
+  top: 10px;
+  font-size: 18px;
+  animation: heartFloat 1.4s ease-out forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes heartFloat {
+  0%   { transform: translateY(0) scale(0.5); opacity: 1; }
+  60%  { transform: translateY(-55px) scale(1.1); opacity: 0.9; }
+  100% { transform: translateY(-90px) scale(0.8); opacity: 0; }
+}
+
+/* Name + message */
+.animal-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d5a1a;
+  margin-top: 6px;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.6);
+}
+
+.pet-message {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d5a1a;
+  background: rgba(255,255,255,0.75);
+  border-radius: 10px;
+  padding: 4px 10px;
+  margin-top: 4px;
+  white-space: nowrap;
+  animation: msgFade 1.5s ease forwards;
+}
+
+@keyframes msgFade {
+  0%   { opacity: 0; transform: translateY(4px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Pet hint */
+.pet-hint {
+  position: absolute;
+  bottom: -22px;
+  font-size: 11px;
+  color: rgba(45,90,26,0.7);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Ground strip */
+.farm-ground-strip {
+  height: 60px;
+  background: linear-gradient(180deg, #5ea832 0%, #4a7a22 40%, #2d5a14 100%);
+  flex-shrink: 0;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .animal-name {
+  color: #a8e870;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+[data-theme='dark'] .pet-message {
+  background: rgba(0,0,0,0.5);
+  color: #a8e870;
+}
+[data-theme='dark'] .pet-hint {
+  color: rgba(168,232,112,0.7);
+}
