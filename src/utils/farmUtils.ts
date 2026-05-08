@@ -1,6 +1,7 @@
 export interface FoodDef {
   id: string
   name: string
+  nameEs: string
   emoji: string
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
   rarityLabel: string
@@ -13,42 +14,42 @@ export interface FoodDef {
 
 export const FOODS: FoodDef[] = [
   {
-    id: 'kibble', name: 'Kibble', emoji: '🐾', rarity: 'common',
+    id: 'kibble', name: 'Kibble', nameEs: 'Croquetas', emoji: '🐾', rarity: 'common',
     rarityLabel: 'Common', color: '#9ca3af', bgColor: '#f3f4f6', glowColor: 'rgba(156,163,175,0.4)',
     description: 'Dry kibble — a humble meal.', feedHours: 2,
   },
   {
-    id: 'canned', name: 'Canned Bits', emoji: '🥫', rarity: 'common',
+    id: 'canned', name: 'Canned Bits', nameEs: 'Comida Enlatada', emoji: '🥫', rarity: 'common',
     rarityLabel: 'Common', color: '#9ca3af', bgColor: '#f3f4f6', glowColor: 'rgba(156,163,175,0.4)',
     description: 'Tasty canned food. They\'ll accept it.', feedHours: 4,
   },
   {
-    id: 'tuna', name: 'Fresh Tuna', emoji: '🐟', rarity: 'uncommon',
+    id: 'tuna', name: 'Fresh Tuna', nameEs: 'Atún Fresco', emoji: '🐟', rarity: 'uncommon',
     rarityLabel: 'Uncommon', color: '#22c55e', bgColor: '#dcfce7', glowColor: 'rgba(34,197,94,0.4)',
     description: 'A nice chunk of fresh tuna.', feedHours: 12,
   },
   {
-    id: 'salmon', name: 'Grilled Salmon', emoji: '🍣', rarity: 'uncommon',
+    id: 'salmon', name: 'Grilled Salmon', nameEs: 'Salmón a la Plancha', emoji: '🍣', rarity: 'uncommon',
     rarityLabel: 'Uncommon', color: '#22c55e', bgColor: '#dcfce7', glowColor: 'rgba(34,197,94,0.4)',
     description: 'Lightly grilled. Fancy for a Tuesday.', feedHours: 18,
   },
   {
-    id: 'shrimp', name: 'Shrimp Platter', emoji: '🦐', rarity: 'rare',
+    id: 'shrimp', name: 'Shrimp Platter', nameEs: 'Plato de Camarones', emoji: '🦐', rarity: 'rare',
     rarityLabel: 'Rare', color: '#3b82f6', bgColor: '#dbeafe', glowColor: 'rgba(59,130,246,0.5)',
     description: 'A whole platter! Very impressive.', feedHours: 36,
   },
   {
-    id: 'chicken', name: 'Roast Chicken', emoji: '🍗', rarity: 'rare',
+    id: 'chicken', name: 'Roast Chicken', nameEs: 'Pollo Asado', emoji: '🍗', rarity: 'rare',
     rarityLabel: 'Rare', color: '#3b82f6', bgColor: '#dbeafe', glowColor: 'rgba(59,130,246,0.5)',
     description: 'Golden roasted perfection.', feedHours: 48,
   },
   {
-    id: 'lobster', name: 'Lobster Tail', emoji: '🦞', rarity: 'epic',
+    id: 'lobster', name: 'Lobster Tail', nameEs: 'Cola de Langosta', emoji: '🦞', rarity: 'epic',
     rarityLabel: 'Epic', color: '#8b5cf6', bgColor: '#ede9fe', glowColor: 'rgba(139,92,246,0.6)',
     description: 'An extravagant feast. Worth every point.', feedHours: 96,
   },
   {
-    id: 'golden_rat', name: 'Golden Rat', emoji: '🐀', rarity: 'legendary',
+    id: 'golden_rat', name: 'Golden Rat', nameEs: 'Rata Dorada', emoji: '🐀', rarity: 'legendary',
     rarityLabel: 'Legendary ✨', color: '#f59e0b', bgColor: '#fef3c7', glowColor: 'rgba(245,158,11,0.7)',
     description: 'The ultimate prize. Keeps a cat fed for a full week!', feedHours: 168,
   },

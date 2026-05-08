@@ -235,7 +235,9 @@ export default function FarmGame({ onBack, onEarnFood }: Props) {
                   animation: 'foodReveal 0.4s cubic-bezier(0.34,1.56,0.64,1)',
                 }}>
                   <div style={{ fontSize: '48px', lineHeight: 1 }}>{earnedFood.emoji}</div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#111' }}>{earnedFood.name}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#111' }}>
+                    {earnedFood.name} <span style={{ fontSize: '14px', fontWeight: 600, color: '#555' }}>({earnedFood.nameEs})</span>
+                  </div>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: earnedFood.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{earnedFood.rarityLabel}</div>
                   <div style={{ fontSize: '12px', color: '#555', textAlign: 'center', maxWidth: '180px' }}>{earnedFood.description}</div>
                   <div style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>

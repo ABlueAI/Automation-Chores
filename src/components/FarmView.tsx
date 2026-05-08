@@ -227,7 +227,7 @@ export default function FarmView({ onGoToChores }: Props) {
             ) : (
               <div className="pantry-grid">
                 {FOODS.filter(f => (inventory[f.id] || 0) > 0).map(food => (
-                  <div key={food.id} className={`pantry-item rarity-${food.rarity}`} title={`${food.name} — ${food.rarityLabel}`}>
+                  <div key={food.id} className={`pantry-item rarity-${food.rarity}`} title={`${food.name} (${food.nameEs}) — ${food.rarityLabel}`}>
                     <span className="pantry-emoji">{food.emoji}</span>
                     <span className="pantry-count">×{inventory[food.id]}</span>
                   </div>
