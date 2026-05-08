@@ -11,7 +11,30 @@ import { ConfettiCelebration } from '../components/ConfettiCelebration'
 import { getDateString, groupChoresByDate } from '../utils/dateUtils'
 import { getCompletionStats } from '../utils/choreUtils'
 import '../styles/ChoreApp.css'
-import { Plus, Users, Download, Moon, Sun, Calendar, ShoppingCart, Sprout } from 'lucide-react'
+import { Plus, Users, Download, Moon, Sun, Calendar, ShoppingCart } from 'lucide-react'
+
+function BarnCatIcon() {
+  return (
+    <svg width="18" height="16" viewBox="0 0 26 22" fill="currentColor">
+      {/* Barn body */}
+      <rect x="1" y="11" width="15" height="11" rx="1"/>
+      {/* Barn roof */}
+      <polygon points="0,12 8.5,4 17,12"/>
+      {/* Barn door */}
+      <rect x="5.5" y="15" width="4" height="7" fill="white" opacity="0.25" rx="0.5"/>
+      {/* Cat body beside barn */}
+      <ellipse cx="22" cy="17" rx="4" ry="3.5"/>
+      {/* Cat head */}
+      <circle cx="22" cy="12" r="3.8"/>
+      {/* Cat ears */}
+      <polygon points="19,10 18,7.5 21,10"/>
+      <polygon points="25,10 26,7.5 23,10"/>
+      {/* Cat eyes */}
+      <circle cx="20.8" cy="11.5" r="0.8" fill="white"/>
+      <circle cx="23.2" cy="11.5" r="0.8" fill="white"/>
+    </svg>
+  )
+}
 
 interface Props {
   onGoToGrocery: () => void
@@ -226,7 +249,7 @@ export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
               onClick={onGoToFarm}
               title="Go to Our Farm"
             >
-              <Sprout size={16} /> Farm
+              <BarnCatIcon /> Farm
             </button>
             <button
               className="btn-header"

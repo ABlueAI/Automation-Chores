@@ -138,9 +138,154 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 60px;
-  padding: 0 40px 60px;
+  gap: 32px;
+  padding: 0 24px 60px;
+  flex-wrap: wrap;
 }
+
+/* Animal wrapper (card + feed button below) */
+.animal-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Feed button */
+.btn-feed {
+  padding: 6px 14px;
+  background: #f59e0b;
+  color: #1a1a00;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.35);
+}
+.btn-feed:hover {
+  background: #d97706;
+  transform: none;
+}
+
+/* Feed reaction message */
+.feed-reaction {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d5a1a;
+  background: rgba(255,255,255,0.8);
+  border-radius: 10px;
+  padding: 4px 12px;
+  white-space: nowrap;
+  animation: msgFade 2s ease forwards;
+}
+
+/* Fed status badge */
+.fed-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+.fed-status--ok {
+  background: rgba(34,197,94,0.2);
+  color: #166534;
+  border: 1px solid rgba(34,197,94,0.4);
+}
+.fed-status--hungry {
+  background: rgba(239,68,68,0.15);
+  color: #991b1b;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+[data-theme='dark'] .fed-status--ok { color: #86efac; }
+[data-theme='dark'] .fed-status--hungry { color: #fca5a5; }
+
+/* Fed glow on cat */
+.cat-svg.cat-fed {
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2)) drop-shadow(0 0 14px rgba(74,200,80,0.35));
+}
+
+/* Heart layer */
+.heart-layer {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+/* Pantry */
+.pantry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.65);
+  border-radius: 16px;
+  padding: 14px 16px;
+  min-width: 130px;
+  max-width: 160px;
+  margin-bottom: 60px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.8);
+  backdrop-filter: blur(4px);
+}
+[data-theme='dark'] .pantry {
+  background: rgba(0,0,0,0.4);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.pantry-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2d5a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+[data-theme='dark'] .pantry-title { color: #86efac; }
+
+.pantry-empty {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.pantry-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.pantry-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 7px;
+  border-radius: 8px;
+  border: 1.5px solid;
+  min-width: 42px;
+  cursor: default;
+}
+.pantry-item.rarity-common    { background: #f3f4f6; border-color: #9ca3af; }
+.pantry-item.rarity-uncommon  { background: #dcfce7; border-color: #22c55e; }
+.pantry-item.rarity-rare      { background: #dbeafe; border-color: #3b82f6; }
+.pantry-item.rarity-epic      { background: #ede9fe; border-color: #8b5cf6; }
+.pantry-item.rarity-legendary { background: #fef3c7; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.4); }
+
+.pantry-emoji { font-size: 20px; line-height: 1; }
+.pantry-count { font-size: 10px; font-weight: 800; color: #374151; }
+[data-theme='dark'] .pantry-count { color: #d1d5db; }
+
+.pantry-hint {
+  font-size: 10px;
+  color: rgba(45,90,26,0.55);
+  text-align: center;
+}
+[data-theme='dark'] .pantry-hint { color: rgba(134,239,172,0.5); }
 
 /* Animal card */
 .animal-card {
