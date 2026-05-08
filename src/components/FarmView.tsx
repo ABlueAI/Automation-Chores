@@ -33,80 +33,198 @@ const FEED_MESSAGES: Record<string, string[]> = {
   golden_rat: ['LEGENDARY FEAST! 👑🌟', 'A week of happiness secured!'],
 }
 
+// ── Pixel Art Cats ──────────────────────────────────────────────────────────
+
 function AlcoCat({ petting, fed }: { petting: boolean; fed: boolean }) {
+  // viewBox 0 0 112 128  |  display 140×160  |  pixel size = 8
   return (
-    <svg width="140" height="170" viewBox="0 0 140 170" className={`cat-svg${petting ? ' petting' : ''}${fed ? ' cat-fed' : ''}`}>
-      <path d="M108,138 C138,120 148,88 126,70 C114,60 104,72 112,82" stroke="#9ca3af" strokeWidth="13" fill="none" strokeLinecap="round"/>
-      <path d="M108,138 C138,120 148,88 126,70 C114,60 104,72 112,82" stroke="#d1d5db" strokeWidth="6" fill="none" strokeLinecap="round"/>
-      <ellipse cx="68" cy="112" rx="36" ry="42" fill="#9ca3af"/>
-      <ellipse cx="68" cy="122" rx="20" ry="28" fill="#d1d5db"/>
-      <ellipse cx="68" cy="60" rx="31" ry="30" fill="#9ca3af"/>
-      <polygon points="40,42 30,12 58,34" fill="#9ca3af"/>
-      <polygon points="42,40 34,18 56,33" fill="#f9a8d4"/>
-      <polygon points="96,42 106,12 78,34" fill="#9ca3af"/>
-      <polygon points="94,40 102,18 80,33" fill="#f9a8d4"/>
-      <ellipse cx="54" cy="58" rx="10" ry="9" fill="#fbbf24"/>
-      <ellipse cx="82" cy="58" rx="10" ry="9" fill="#fbbf24"/>
-      <ellipse cx="54" cy="58" rx="5" ry="8" fill="#111827"/>
-      <ellipse cx="82" cy="58" rx="5" ry="8" fill="#111827"/>
-      <circle cx="56" cy="54" r="2.5" fill="white"/>
-      <circle cx="84" cy="54" r="2.5" fill="white"/>
-      <polygon points="68,70 63,76 73,76" fill="#f9a8d4"/>
-      <path d="M63,76 Q68,82 73,76" stroke="#9ca3af" strokeWidth="1.5" fill="none"/>
-      <line x1="28" y1="70" x2="60" y2="73" stroke="#e5e7eb" strokeWidth="1.5"/>
-      <line x1="28" y1="76" x2="60" y2="76" stroke="#e5e7eb" strokeWidth="1.5"/>
-      <line x1="28" y1="82" x2="60" y2="79" stroke="#e5e7eb" strokeWidth="1.5"/>
-      <line x1="108" y1="70" x2="76" y2="73" stroke="#e5e7eb" strokeWidth="1.5"/>
-      <line x1="108" y1="76" x2="76" y2="76" stroke="#e5e7eb" strokeWidth="1.5"/>
-      <line x1="108" y1="82" x2="76" y2="79" stroke="#e5e7eb" strokeWidth="1.5"/>
-      <ellipse cx="50" cy="154" rx="14" ry="9" fill="#9ca3af"/>
-      <ellipse cx="86" cy="154" rx="14" ry="9" fill="#9ca3af"/>
-      <ellipse cx="50" cy="154" rx="11" ry="6" fill="#d1d5db"/>
-      <ellipse cx="86" cy="154" rx="11" ry="6" fill="#d1d5db"/>
-      {fed && <ellipse cx="68" cy="100" rx="28" ry="8" fill="rgba(251,191,36,0.18)" />}
+    <svg width="140" height="160" viewBox="0 0 112 128"
+      className={`cat-svg${petting ? ' petting' : ''}${fed ? ' cat-fed' : ''}`}>
+      {/* Ears */}
+      <rect x={16} y={0}  width={16} height={20} fill="#6b7280"/>
+      <rect x={80} y={0}  width={16} height={20} fill="#6b7280"/>
+      <rect x={20} y={8}  width={8}  height={8}  fill="#f9a8d4"/>
+      <rect x={84} y={8}  width={8}  height={8}  fill="#f9a8d4"/>
+      {/* Head */}
+      <rect x={8}  y={16} width={96} height={52} fill="#9ca3af"/>
+      {/* Left eye */}
+      <rect x={20} y={28} width={16} height={16} fill="#fbbf24"/>
+      <rect x={28} y={28} width={8}  height={16} fill="#111827"/>
+      <rect x={20} y={28} width={8}  height={8}  fill="rgba(255,255,255,0.5)"/>
+      {/* Right eye */}
+      <rect x={76} y={28} width={16} height={16} fill="#fbbf24"/>
+      <rect x={84} y={28} width={8}  height={16} fill="#111827"/>
+      <rect x={76} y={28} width={8}  height={8}  fill="rgba(255,255,255,0.5)"/>
+      {/* Nose */}
+      <rect x={48} y={48} width={16} height={8}  fill="#f9a8d4"/>
+      {/* Mouth */}
+      <rect x={36} y={56} width={10} height={4}  fill="#6b7280"/>
+      <rect x={66} y={56} width={10} height={4}  fill="#6b7280"/>
+      {/* Whiskers */}
+      <rect x={0}  y={46} width={22} height={2}  fill="#d1d5db"/>
+      <rect x={0}  y={54} width={22} height={2}  fill="#d1d5db"/>
+      <rect x={90} y={46} width={22} height={2}  fill="#d1d5db"/>
+      <rect x={90} y={54} width={22} height={2}  fill="#d1d5db"/>
+      {/* Body */}
+      <rect x={12} y={68} width={88} height={52} fill="#9ca3af"/>
+      {/* Belly */}
+      <rect x={24} y={76} width={64} height={40} fill="#d1d5db"/>
+      {/* Tail */}
+      <rect x={96} y={52} width={14} height={48} fill="#9ca3af"/>
+      <rect x={80} y={88} width={18} height={14} fill="#9ca3af"/>
+      {/* Paws */}
+      <rect x={12} y={116} width={30} height={12} fill="#9ca3af"/>
+      <rect x={70} y={116} width={30} height={12} fill="#9ca3af"/>
+      <rect x={12} y={116} width={30} height={6}  fill="#d1d5db"/>
+      <rect x={70} y={116} width={30} height={6}  fill="#d1d5db"/>
+      {fed && <rect x={8} y={68} width={96} height={6} fill="rgba(251,191,36,0.28)"/>}
     </svg>
   )
 }
 
 function LinkCat({ petting, fed }: { petting: boolean; fed: boolean }) {
   return (
-    <svg width="140" height="170" viewBox="0 0 140 170" className={`cat-svg${petting ? ' petting' : ''}${fed ? ' cat-fed' : ''}`}>
-      <path d="M108,138 C136,122 145,90 124,72 C112,62 102,74 110,84" stroke="#111827" strokeWidth="13" fill="none" strokeLinecap="round"/>
-      <path d="M124,72 C112,62 102,74 110,84" stroke="#f9fafb" strokeWidth="7" fill="none" strokeLinecap="round"/>
-      <ellipse cx="68" cy="112" rx="38" ry="44" fill="#1f2937"/>
-      <ellipse cx="68" cy="122" rx="22" ry="30" fill="#f1f5f9"/>
-      <ellipse cx="68" cy="60" rx="33" ry="31" fill="#1f2937"/>
-      <ellipse cx="68" cy="68" rx="18" ry="14" fill="#f1f5f9"/>
-      <polygon points="38,42 28,10 58,34" fill="#1f2937"/>
-      <polygon points="40,40 32,16 56,33" fill="#f9a8d4"/>
-      <polygon points="98,42 108,10 78,34" fill="#1f2937"/>
-      <polygon points="96,40 104,16 80,33" fill="#f9a8d4"/>
-      <path d="M46,36 Q58,30 70,33" stroke="#374151" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-      <path d="M50,28 Q62,22 74,25" stroke="#374151" strokeWidth="2" fill="none" strokeLinecap="round"/>
-      <ellipse cx="54" cy="57" rx="10" ry="9" fill="#10b981"/>
-      <ellipse cx="82" cy="57" rx="10" ry="9" fill="#10b981"/>
-      <ellipse cx="54" cy="57" rx="5" ry="8" fill="#111827"/>
-      <ellipse cx="82" cy="57" rx="5" ry="8" fill="#111827"/>
-      <circle cx="56" cy="53" r="2.5" fill="white"/>
-      <circle cx="84" cy="53" r="2.5" fill="white"/>
-      <polygon points="68,70 63,76 73,76" fill="#f9a8d4"/>
-      <path d="M63,76 Q68,82 73,76" stroke="#9ca3af" strokeWidth="1.5" fill="none"/>
-      <line x1="28" y1="70" x2="60" y2="73" stroke="#cbd5e1" strokeWidth="1.5"/>
-      <line x1="28" y1="76" x2="60" y2="76" stroke="#cbd5e1" strokeWidth="1.5"/>
-      <line x1="28" y1="82" x2="60" y2="79" stroke="#cbd5e1" strokeWidth="1.5"/>
-      <line x1="108" y1="70" x2="76" y2="73" stroke="#cbd5e1" strokeWidth="1.5"/>
-      <line x1="108" y1="76" x2="76" y2="76" stroke="#cbd5e1" strokeWidth="1.5"/>
-      <line x1="108" y1="82" x2="76" y2="79" stroke="#cbd5e1" strokeWidth="1.5"/>
-      <ellipse cx="50" cy="154" rx="14" ry="9" fill="#1f2937"/>
-      <ellipse cx="50" cy="154" rx="11" ry="6" fill="#374151"/>
-      <ellipse cx="86" cy="154" rx="14" ry="9" fill="#f1f5f9"/>
-      <circle cx="81" cy="153" r="3.5" fill="#f9a8d4"/>
-      <circle cx="86" cy="156" r="3" fill="#f9a8d4"/>
-      <circle cx="91" cy="153" r="3" fill="#f9a8d4"/>
-      {fed && <ellipse cx="68" cy="100" rx="28" ry="8" fill="rgba(16,185,129,0.18)" />}
+    <svg width="140" height="160" viewBox="0 0 112 128"
+      className={`cat-svg${petting ? ' petting' : ''}${fed ? ' cat-fed' : ''}`}>
+      {/* Ears */}
+      <rect x={16} y={0}  width={16} height={20} fill="#1f2937"/>
+      <rect x={80} y={0}  width={16} height={20} fill="#1f2937"/>
+      <rect x={20} y={8}  width={8}  height={8}  fill="#f9a8d4"/>
+      <rect x={84} y={8}  width={8}  height={8}  fill="#f9a8d4"/>
+      {/* Head */}
+      <rect x={8}  y={16} width={96} height={52} fill="#1f2937"/>
+      {/* Tabby forehead stripes */}
+      <rect x={8}  y={20} width={96} height={4}  fill="#374151"/>
+      <rect x={8}  y={30} width={96} height={4}  fill="#374151"/>
+      {/* White muzzle */}
+      <rect x={28} y={44} width={56} height={24} fill="#f1f5f9"/>
+      {/* Left eye */}
+      <rect x={20} y={28} width={16} height={16} fill="#10b981"/>
+      <rect x={28} y={28} width={8}  height={16} fill="#111827"/>
+      <rect x={20} y={28} width={8}  height={8}  fill="rgba(255,255,255,0.5)"/>
+      {/* Right eye */}
+      <rect x={76} y={28} width={16} height={16} fill="#10b981"/>
+      <rect x={84} y={28} width={8}  height={16} fill="#111827"/>
+      <rect x={76} y={28} width={8}  height={8}  fill="rgba(255,255,255,0.5)"/>
+      {/* Nose — pink */}
+      <rect x={48} y={48} width={16} height={8}  fill="#f9a8d4"/>
+      {/* Mouth */}
+      <rect x={36} y={56} width={10} height={4}  fill="#9ca3af"/>
+      <rect x={66} y={56} width={10} height={4}  fill="#9ca3af"/>
+      {/* Whiskers */}
+      <rect x={0}  y={46} width={22} height={2}  fill="#9ca3af"/>
+      <rect x={0}  y={54} width={22} height={2}  fill="#9ca3af"/>
+      <rect x={90} y={46} width={22} height={2}  fill="#9ca3af"/>
+      <rect x={90} y={54} width={22} height={2}  fill="#9ca3af"/>
+      {/* Body */}
+      <rect x={12} y={68} width={88} height={52} fill="#1f2937"/>
+      {/* White chest */}
+      <rect x={24} y={76} width={64} height={40} fill="#f1f5f9"/>
+      {/* Tabby stripes on sides */}
+      <rect x={12} y={76} width={12} height={6}  fill="#374151"/>
+      <rect x={12} y={90} width={12} height={6}  fill="#374151"/>
+      <rect x={12} y={104} width={12} height={6} fill="#374151"/>
+      <rect x={88} y={76} width={12} height={6}  fill="#374151"/>
+      <rect x={88} y={90} width={12} height={6}  fill="#374151"/>
+      <rect x={88} y={104} width={12} height={6} fill="#374151"/>
+      {/* Tail */}
+      <rect x={96} y={52} width={14} height={48} fill="#1f2937"/>
+      <rect x={80} y={88} width={18} height={14} fill="#1f2937"/>
+      <rect x={80} y={96} width={18} height={8}  fill="#f1f5f9"/>
+      {/* Left paw */}
+      <rect x={12} y={116} width={30} height={12} fill="#1f2937"/>
+      <rect x={12} y={116} width={30} height={6}  fill="#374151"/>
+      {/* Right paw — white with pink toe beans */}
+      <rect x={70} y={116} width={30} height={12} fill="#f1f5f9"/>
+      <rect x={70} y={116} width={30} height={5}  fill="#1f2937"/>
+      <rect x={72} y={118} width={6}  height={5}  fill="#f9a8d4"/>
+      <rect x={80} y={118} width={6}  height={5}  fill="#f9a8d4"/>
+      <rect x={88} y={118} width={6}  height={5}  fill="#f9a8d4"/>
+      {fed && <rect x={8} y={68} width={96} height={6} fill="rgba(16,185,129,0.28)"/>}
     </svg>
   )
 }
+
+// ── Pixel Art Barn ───────────────────────────────────────────────────────────
+
+function PixelBarn() {
+  return (
+    <svg width="380" height="300" viewBox="0 0 380 300" className="farm-barn-svg">
+      {/* Roof */}
+      <polygon points="0,128 190,24 380,128" fill="#374151"/>
+      <polygon points="4,128 190,30 376,128" fill="#4b5563"/>
+      {/* Roof shingle lines */}
+      {[60,80,100,118].map(y => (
+        <rect key={y} x={Math.round((y-24)/104*190)} y={y} width={Math.round(380-(y-24)/104*380)} height={3} fill="rgba(0,0,0,0.18)"/>
+      ))}
+      {/* Ridge cap */}
+      <rect x={180} y={20} width={20} height={12} fill="#1f2937"/>
+      {/* Weather vane pole */}
+      <rect x={188} y={0}  width={4}  height={24} fill="#6b7280"/>
+      <rect x={174} y={6}  width={32} height={4}  fill="#6b7280"/>
+      <polygon points="188,2 176,12 188,12" fill="#9ca3af"/>
+      <polygon points="192,2 204,12 192,12" fill="#9ca3af"/>
+
+      {/* Main barn body */}
+      <rect x={0}   y={124} width={380} height={176} fill="#7c1d1d"/>
+      {/* Wood plank lines */}
+      {[148,172,196,220,244,268].map(y => (
+        <rect key={y} x={0} y={y} width={380} height={3} fill="rgba(0,0,0,0.15)"/>
+      ))}
+      {/* Vertical plank shadows */}
+      {[60,120,180,240,300].map(x => (
+        <rect key={x} x={x} y={124} width={4} height={176} fill="rgba(0,0,0,0.12)"/>
+      ))}
+
+      {/* Loft door */}
+      <rect x={148} y={134} width={84} height={66} fill="#5c0f0f"/>
+      <rect x={144} y={130} width={4}  height={74} fill="#8b3a10"/>
+      <rect x={232} y={130} width={4}  height={74} fill="#8b3a10"/>
+      <rect x={144} y={130} width={92} height={4}  fill="#8b3a10"/>
+      <rect x={148} y={162} width={84} height={4}  fill="#7c2020"/>
+      <rect x={186} y={134} width={8}  height={66} fill="#7c2020"/>
+
+      {/* Left window */}
+      <rect x={24}  y={154} width={52} height={44} fill="#93c5fd"/>
+      <rect x={24}  y={154} width={52} height={4}  fill="#6ab0f5"/>
+      <rect x={48}  y={154} width={4}  height={44} fill="#8b3a10"/>
+      <rect x={24}  y={174} width={52} height={4}  fill="#8b3a10"/>
+      <rect x={20}  y={150} width={4}  height={52} fill="#8b3a10"/>
+      <rect x={76}  y={150} width={4}  height={52} fill="#8b3a10"/>
+      <rect x={20}  y={150} width={60} height={4}  fill="#8b3a10"/>
+      <rect x={20}  y={198} width={60} height={4}  fill="#8b3a10"/>
+
+      {/* Right window */}
+      <rect x={304} y={154} width={52} height={44} fill="#93c5fd"/>
+      <rect x={304} y={154} width={52} height={4}  fill="#6ab0f5"/>
+      <rect x={328} y={154} width={4}  height={44} fill="#8b3a10"/>
+      <rect x={304} y={174} width={52} height={4}  fill="#8b3a10"/>
+      <rect x={300} y={150} width={4}  height={52} fill="#8b3a10"/>
+      <rect x={356} y={150} width={4}  height={52} fill="#8b3a10"/>
+      <rect x={300} y={150} width={60} height={4}  fill="#8b3a10"/>
+      <rect x={300} y={198} width={60} height={4}  fill="#8b3a10"/>
+
+      {/* Main doors */}
+      <rect x={92}  y={216} width={76} height={84} fill="#5c0f0f"/>
+      <rect x={212} y={216} width={76} height={84} fill="#5c0f0f"/>
+      {/* Door frames */}
+      <rect x={88}  y={212} width={4}  height={88} fill="#8b3a10"/>
+      <rect x={168} y={212} width={8}  height={88} fill="#8b3a10"/>
+      <rect x={288} y={212} width={4}  height={88} fill="#8b3a10"/>
+      <rect x={88}  y={212} width={204} height={4} fill="#8b3a10"/>
+      {/* Door X crosses */}
+      <rect x={92}  y={250} width={76} height={4}  fill="#7c2020"/>
+      <rect x={128} y={216} width={4}  height={84} fill="#7c2020"/>
+      <rect x={212} y={250} width={76} height={4}  fill="#7c2020"/>
+      <rect x={248} y={216} width={4}  height={84} fill="#7c2020"/>
+
+      {/* Ground shadow under barn */}
+      <rect x={0} y={296} width={380} height={4} fill="rgba(0,0,0,0.25)"/>
+    </svg>
+  )
+}
+
+// ── Component state ──────────────────────────────────────────────────────────
 
 interface PetState { petting: boolean; message: string; heartKey: number }
 const IDLE: PetState = { petting: false, message: '', heartKey: 0 }
@@ -153,7 +271,6 @@ export default function FarmView({ onGoToChores }: Props) {
   const totalFood = Object.values(inventory).reduce((s, n) => s + n, 0)
   const hasBest = !!bestFoodInInventory(inventory)
 
-  // Refresh fed status every minute
   useState(() => { const id = setInterval(() => forceUpdate(n => n + 1), 60000); return () => clearInterval(id) })
 
   if (showGame) return <FarmGame onBack={() => setShowGame(false)} onEarnFood={handleEarnFood} />
@@ -173,25 +290,43 @@ export default function FarmView({ onGoToChores }: Props) {
       </header>
 
       <div className="farm-scene">
+        {/* Clouds */}
         <div className="farm-clouds">
-          <div className="cloud cloud-1" /><div className="cloud cloud-2" /><div className="cloud cloud-3" />
+          <div className="cloud cloud-1"/><div className="cloud cloud-2"/><div className="cloud cloud-3"/>
         </div>
 
+        {/* Flying birds */}
+        <div className="farm-birds">
+          <div className="pixel-bird bird-1"/>
+          <div className="pixel-bird bird-2"/>
+          <div className="pixel-bird bird-3"/>
+          <div className="pixel-bird bird-4"/>
+          <div className="pixel-bird bird-5"/>
+        </div>
+
+        {/* Barn background */}
+        <div className="farm-barn">
+          <PixelBarn />
+        </div>
+
+        {/* Fence */}
         <div className="farm-fence-row">
           <svg className="farm-fence-svg" viewBox="0 0 900 70" preserveAspectRatio="xMidYMid slice">
             {Array.from({ length: 28 }, (_, i) => (
               <g key={i} transform={`translate(${i * 32}, 0)`}>
-                <rect x="3" y="10" width="14" height="54" rx="2" fill="#8b6914"/>
-                <polygon points="10,2 3,10 17,10" fill="#a07820"/>
-                <rect x="4" y="11" width="4" height="52" rx="1" fill="#a07820"/>
+                <rect x="3" y="10" width="14" height="54" rx="1" fill="#8b5a1e"/>
+                <polygon points="10,2 3,10 17,10" fill="#a06828"/>
+                <rect x="4" y="11" width="4" height="52" rx="0" fill="#a06828"/>
               </g>
             ))}
-            <rect x="0" y="22" width="900" height="8" rx="3" fill="#a07820"/>
-            <rect x="0" y="42" width="900" height="8" rx="3" fill="#a07820"/>
+            <rect x="0" y="22" width="900" height="8" rx="2" fill="#a06828"/>
+            <rect x="0" y="42" width="900" height="8" rx="2" fill="#a06828"/>
           </svg>
         </div>
 
+        {/* Animals + Pantry */}
         <div className="farm-animals-area">
+
           {/* Alco */}
           <div className="animal-wrapper">
             <div className="animal-card" onClick={() => pet('alco')} role="button" aria-label="Pet Alco">

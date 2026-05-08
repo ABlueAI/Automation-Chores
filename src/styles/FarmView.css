@@ -47,42 +47,38 @@
   background: rgba(255,255,255,0.15);
   color: white;
 }
-.btn-farm-back:hover {
-  background: rgba(255,255,255,0.25);
-  transform: none;
-}
+.btn-farm-back:hover { background: rgba(255,255,255,0.25); }
 
 .btn-farm-play {
   background: #fbbf24;
   color: #1a1a00;
 }
-.btn-farm-play:hover {
-  background: #f59e0b;
-  transform: none;
-}
+.btn-farm-play:hover { background: #f59e0b; }
 
 /* ── Scene ── */
 .farm-scene {
   flex: 1;
   position: relative;
-  background: linear-gradient(180deg, #87b5e8 0%, #b8d8f0 45%, #cde8a0 80%, #7dba4d 100%);
+  /* Stardew Valley morning sky */
+  background: linear-gradient(180deg, #4a7abf 0%, #6fa4d8 30%, #9dc8e8 55%, #c8e8b8 78%, #6ab440 100%);
   overflow: hidden;
   min-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
 }
 
-/* Clouds */
+/* ── Clouds ── */
 .farm-clouds {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 120px;
   pointer-events: none;
+  z-index: 1;
 }
 
 .cloud {
   position: absolute;
-  background: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.88);
   border-radius: 40px;
   height: 22px;
   animation: cloudDrift linear infinite;
@@ -90,33 +86,92 @@
 .cloud::before {
   content: '';
   position: absolute;
-  background: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.88);
   border-radius: 50%;
-  width: 46%;
-  height: 220%;
-  top: -60%;
-  left: 27%;
+  width: 46%; height: 220%;
+  top: -60%; left: 27%;
 }
 .cloud::after {
   content: '';
   position: absolute;
-  background: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.88);
   border-radius: 50%;
-  width: 32%;
-  height: 170%;
-  top: -30%;
-  left: 10%;
+  width: 32%; height: 170%;
+  top: -30%; left: 10%;
 }
-.cloud-1 { width: 100px; top: 20px; left: 8%;  animation-duration: 60s; animation-delay: 0s; }
-.cloud-2 { width: 72px;  top: 38px; left: 40%; animation-duration: 80s; animation-delay: -25s; }
-.cloud-3 { width: 120px; top: 12px; left: 70%; animation-duration: 70s; animation-delay: -40s; }
+.cloud-1 { width: 110px; top: 18px; left: 8%;  animation-duration: 60s; animation-delay: 0s; }
+.cloud-2 { width: 78px;  top: 40px; left: 40%; animation-duration: 80s; animation-delay: -25s; }
+.cloud-3 { width: 128px; top: 10px; left: 70%; animation-duration: 70s; animation-delay: -40s; }
 
 @keyframes cloudDrift {
   from { transform: translateX(0); }
   to   { transform: translateX(-1400px); }
 }
 
-/* Fence */
+/* ── Flying Pixel Birds ── */
+.farm-birds {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.pixel-bird {
+  position: absolute;
+  width: 18px;
+  height: 10px;
+  animation: birdFlyAcross linear infinite;
+}
+.pixel-bird::before,
+.pixel-bird::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 5px;
+  background: #1f2937;
+  top: 3px;
+}
+.pixel-bird::before {
+  left: 0;
+  border-radius: 9px 9px 0 0;
+  transform: rotate(-12deg);
+  transform-origin: right bottom;
+}
+.pixel-bird::after {
+  right: 0;
+  border-radius: 9px 9px 0 0;
+  transform: rotate(12deg);
+  transform-origin: left bottom;
+}
+
+/* Stagger birds at different heights, speeds, and sizes */
+.bird-1 { top: 12%;  animation-duration: 18s; animation-delay: 0s;    scale: 1.0; }
+.bird-2 { top: 8%;   animation-duration: 26s; animation-delay: -7s;   scale: 0.7; }
+.bird-3 { top: 18%;  animation-duration: 22s; animation-delay: -12s;  scale: 0.85; }
+.bird-4 { top: 6%;   animation-duration: 32s; animation-delay: -4s;   scale: 0.6; }
+.bird-5 { top: 22%;  animation-duration: 20s; animation-delay: -16s;  scale: 1.1; }
+
+@keyframes birdFlyAcross {
+  from { transform: translateX(-60px); }
+  to   { transform: translateX(calc(100vw + 60px)); }
+}
+
+/* ── Barn ── */
+.farm-barn {
+  position: absolute;
+  bottom: 195px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.farm-barn-svg {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+/* ── Fence ── */
 .farm-fence-row {
   position: absolute;
   bottom: 220px;
@@ -125,6 +180,7 @@
   align-items: flex-end;
   justify-content: center;
   pointer-events: none;
+  z-index: 3;
 }
 
 .farm-fence-svg {
@@ -132,7 +188,7 @@
   max-width: 900px;
 }
 
-/* Animals area */
+/* ── Animals area ── */
 .farm-animals-area {
   flex: 1;
   display: flex;
@@ -141,9 +197,11 @@
   gap: 32px;
   padding: 0 24px 60px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 5;
 }
 
-/* Animal wrapper (card + feed button below) */
+/* Animal wrapper */
 .animal-wrapper {
   display: flex;
   flex-direction: column;
@@ -165,17 +223,14 @@
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(245,158,11,0.35);
 }
-.btn-feed:hover {
-  background: #d97706;
-  transform: none;
-}
+.btn-feed:hover { background: #d97706; }
 
-/* Feed reaction message */
+/* Feed reaction */
 .feed-reaction {
   font-size: 13px;
   font-weight: 700;
   color: #2d5a1a;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.85);
   border-radius: 10px;
   padding: 4px 12px;
   white-space: nowrap;
@@ -201,12 +256,18 @@
   color: #991b1b;
   border: 1px solid rgba(239,68,68,0.3);
 }
-[data-theme='dark'] .fed-status--ok { color: #86efac; }
+[data-theme='dark'] .fed-status--ok    { color: #86efac; }
 [data-theme='dark'] .fed-status--hungry { color: #fca5a5; }
 
 /* Fed glow on cat */
 .cat-svg.cat-fed {
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2)) drop-shadow(0 0 14px rgba(74,200,80,0.35));
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15)) drop-shadow(0 0 16px rgba(74,200,80,0.4));
+}
+
+/* Pixel art rendering for cats */
+.cat-svg {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 /* Heart layer */
@@ -216,24 +277,24 @@
   pointer-events: none;
 }
 
-/* Pantry */
+/* ── Pantry ── */
 .pantry {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.72);
   border-radius: 16px;
   padding: 14px 16px;
   min-width: 130px;
   max-width: 160px;
   margin-bottom: 60px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  border: 1px solid rgba(255,255,255,0.85);
   backdrop-filter: blur(4px);
 }
 [data-theme='dark'] .pantry {
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.45);
   border-color: rgba(255,255,255,0.1);
 }
 
@@ -265,7 +326,7 @@
   flex-direction: column;
   align-items: center;
   padding: 5px 7px;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1.5px solid;
   min-width: 42px;
   cursor: default;
@@ -287,7 +348,7 @@
 }
 [data-theme='dark'] .pantry-hint { color: rgba(134,239,172,0.5); }
 
-/* Animal card */
+/* ── Animal card ── */
 .animal-card {
   position: relative;
   display: flex;
@@ -304,7 +365,7 @@
 
 .cat-svg {
   transition: transform 0.15s ease;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.22));
 }
 
 .cat-svg.petting {
@@ -335,7 +396,7 @@
   100% { transform: translateY(-90px) scale(0.8); opacity: 0; }
 }
 
-/* Name + message */
+/* Name + messages */
 .animal-name {
   font-size: 18px;
   font-weight: 700;
@@ -348,7 +409,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #2d5a1a;
-  background: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.82);
   border-radius: 10px;
   padding: 4px 10px;
   margin-top: 4px;
@@ -363,7 +424,6 @@
   100% { opacity: 0; }
 }
 
-/* Pet hint */
 .pet-hint {
   position: absolute;
   bottom: -22px;
@@ -373,14 +433,16 @@
   white-space: nowrap;
 }
 
-/* Ground strip */
+/* ── Ground strip ── */
 .farm-ground-strip {
   height: 60px;
-  background: linear-gradient(180deg, #5ea832 0%, #4a7a22 40%, #2d5a14 100%);
+  background: linear-gradient(180deg, #5ab830 0%, #46841e 40%, #2d5814 100%);
   flex-shrink: 0;
+  position: relative;
+  z-index: 3;
 }
 
-/* Dark mode adjustments */
+/* ── Dark mode ── */
 [data-theme='dark'] .animal-name {
   color: #a8e870;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
@@ -389,6 +451,4 @@
   background: rgba(0,0,0,0.5);
   color: #a8e870;
 }
-[data-theme='dark'] .pet-hint {
-  color: rgba(168,232,112,0.7);
-}
+[data-theme='dark'] .pet-hint { color: rgba(168,232,112,0.7); }
