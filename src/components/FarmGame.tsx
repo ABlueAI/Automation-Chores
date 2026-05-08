@@ -13,14 +13,11 @@ const GRAVITY = 0.65, JUMP_FORCE = -15, BASE_SPEED = 5
 
 interface Obstacle { x: number; w: number; h: number }
 
-function spawnObstacle(obstacles: Obstacle[], score: number) {
+function spawnObstacle(obstacles: Obstacle[]) {
   const last = obstacles[obstacles.length - 1]
-  const minGap = Math.max(230, 380 - Math.floor(score * 0.07))
-  const gap = minGap + Math.random() * 140
+  const gap = 320 + Math.random() * 200
   const startX = last ? last.x + last.w + gap : W + 120 + Math.random() * 150
-  const configs = score < 200
-    ? [{ w: 36, h: 28 }, { w: 48, h: 36 }]
-    : [{ w: 48, h: 36 }, { w: 62, h: 48 }, { w: 36, h: 28 }, { w: 56, h: 44 }]
+  const configs = [{ w: 48, h: 36 }, { w: 62, h: 48 }, { w: 36, h: 28 }]
   const cfg = configs[Math.floor(Math.random() * configs.length)]
   obstacles.push({ x: startX, ...cfg })
 }
@@ -59,66 +56,22 @@ function drawGround(ctx: CanvasRenderingContext2D) {
 }
 
 function drawFarmer(ctx: CanvasRenderingContext2D, y: number, frame: number) {
-  const x = FARMER_X
-  const runAmt = Math.round(Math.sin(frame * 0.28) * 8)
-  ctx.imageSmoothingEnabled = false
-
-  // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.18)'
-  ctx.beginPath(); ctx.ellipse(x + 14, GROUND + 4, 14, 4, 0, 0, Math.PI * 2); ctx.fill()
-
-  // Back leg (behind body)
-  ctx.fillStyle = '#1e3a8a'; ctx.fillRect(x + 11, y + 34 + runAmt, 8, 14)
-  ctx.fillStyle = '#7c2d12';  ctx.fillRect(x + 9,  y + 46 + runAmt, 12, 6)
-
-  // Torso — overalls
-  ctx.fillStyle = '#3b82f6'; ctx.fillRect(x + 6, y + 18, 18, 18)
-  // Bib + pocket detail
-  ctx.fillStyle = '#2563eb'; ctx.fillRect(x + 9, y + 20, 8, 7)
-  ctx.fillStyle = '#60a5fa'; ctx.fillRect(x + 9, y + 20, 8, 3)
-  // Overall straps
-  ctx.fillStyle = '#3b82f6'; ctx.fillRect(x + 9, y + 12, 4, 8); ctx.fillRect(x + 16, y + 12, 4, 8)
-
-  // Back arm / shirt sleeve
-  ctx.fillStyle = '#fef2d5'; ctx.fillRect(x + 24, y + 19 - runAmt, 6, 12)
-
-  // Front leg
-  ctx.fillStyle = '#2563eb'; ctx.fillRect(x + 11, y + 34 - runAmt, 8, 14)
-  ctx.fillStyle = '#92400e'; ctx.fillRect(x + 11, y + 46 - runAmt, 12, 6)
-
-  // Front arm / shirt sleeve
-  ctx.fillStyle = '#fef2d5'; ctx.fillRect(x + 2, y + 19 + runAmt, 6, 12)
-
-  // Neck
-  ctx.fillStyle = '#fcd9b2'; ctx.fillRect(x + 12, y + 10, 6, 6)
-
-  // Head — side profile facing RIGHT
-  ctx.fillStyle = '#fcd9b2'
-  ctx.fillRect(x + 8, y + 2, 14, 10)   // main head block
-  ctx.fillRect(x + 20, y + 8, 4,  5)   // chin jut (profile)
-
-  // Single eye (right side = front of face, facing right)
-  ctx.fillStyle = '#1f2937'; ctx.fillRect(x + 19, y + 4, 2, 2)
-
-  // Ear on left (back of head)
-  ctx.fillStyle = '#f0b98a'; ctx.fillRect(x + 8, y + 5, 3, 4)
-
-  // Hair (brown, visible behind hat brim)
-  ctx.fillStyle = '#92400e'
-  ctx.fillRect(x + 8, y + 2, 14, 3)   // top hair under hat
-  ctx.fillRect(x + 8, y + 2, 3, 8)    // sideburn/back
-
-  // Hat brim (wide straw)
-  ctx.fillStyle = '#d4b660'; ctx.fillRect(x + 4, y - 2, 24, 5)
-
-  // Hat crown
-  ctx.fillStyle = '#c8a44a'; ctx.fillRect(x + 8, y - 12, 14, 12)
-
-  // Crown highlight
-  ctx.fillStyle = '#d4b660'; ctx.fillRect(x + 9, y - 11, 4, 3)
-
-  // Hat band
-  ctx.fillStyle = '#7c2d12'; ctx.fillRect(x + 8, y - 1, 14, 3)
+  const x = FARMER_X, run = Math.sin(frame * 0.28)
+  ctx.fillStyle = 'rgba(0,0,0,0.13)'; ctx.beginPath(); ctx.ellipse(x + 16, GROUND + 3, 18, 4, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.fillStyle = '#2d5a87'; ctx.fillRect(x + 8, y + 36 + run * 6, 7, 13); ctx.fillRect(x + 17, y + 36 - run * 6, 7, 13)
+  ctx.fillStyle = '#5c3d1e'; ctx.fillRect(x + 6, y + 47 + run * 6, 11, 6); ctx.fillRect(x + 15, y + 47 - run * 6, 11, 6)
+  ctx.fillStyle = '#4a90d9'; ctx.fillRect(x + 7, y + 20, 18, 18)
+  ctx.fillStyle = '#2563eb'; ctx.fillRect(x + 10, y + 16, 12, 10)
+  ctx.fillStyle = '#fdbcb4'; ctx.fillRect(x + 1, y + 21 + run * 5, 6, 13); ctx.fillRect(x + 25, y + 21 - run * 5, 6, 13)
+  ctx.fillStyle = '#fdbcb4'; ctx.beginPath(); ctx.arc(x + 16, y + 13, 10, 0, Math.PI * 2); ctx.fill()
+  ctx.fillStyle = '#1f2937'
+  ctx.beginPath(); ctx.arc(x + 12, y + 12, 2, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.arc(x + 20, y + 12, 2, 0, Math.PI * 2); ctx.fill()
+  ctx.strokeStyle = '#a0522d'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x + 16, y + 15, 4, 0.2, Math.PI - 0.2); ctx.stroke()
+  ctx.fillStyle = '#c8a44a'; ctx.beginPath(); ctx.ellipse(x + 16, y + 3, 17, 4, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.fillStyle = '#d4b660'; ctx.fillRect(x + 9, y - 9, 14, 13)
+  ctx.fillStyle = '#c8a44a'; ctx.beginPath(); ctx.ellipse(x + 16, y - 9, 7, 3, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.fillStyle = '#8b6914'; ctx.fillRect(x + 9, y + 2, 14, 3)
 }
 
 function drawHayBale(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
@@ -183,7 +136,7 @@ export default function FarmGame({ onBack, onEarnFood }: Props) {
         s.fvy += GRAVITY; s.fy += s.fvy
         if (s.fy >= GROUND - FH) { s.fy = GROUND - FH; s.fvy = 0; s.grounded = true }
         s.obstacles = s.obstacles.filter(o => o.x > -200).map(o => ({ ...o, x: o.x - s.speed }))
-        while (s.obstacles.length < 3) spawnObstacle(s.obstacles, s.score)
+        while (s.obstacles.length < 3) spawnObstacle(s.obstacles)
         if (s.obstacles.some(o => collides(s.fy, o))) {
           s.over = true; s.running = false
           const score = Math.floor(s.score)
@@ -263,10 +216,10 @@ export default function FarmGame({ onBack, onEarnFood }: Props) {
               <div style={{ fontSize: '16px', color: '#fde68a' }}>You ran <strong>{finalScore}m</strong></div>
 
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '4px' }}>
-                {finalScore >= 800 ? '⭐ LEGENDARY RUN! Look what you earned...' :
-                 finalScore >= 500 ? '🔥 Great distance! You earned...' :
-                 finalScore >= 250 ? '💪 Solid run! You earned...' :
-                 finalScore >= 100 ? '👍 Not bad! You earned...' :
+                {finalScore >= 450 ? '⭐ Amazing run! Look what you earned...' :
+                 finalScore >= 300 ? '🔥 Great distance! You earned...' :
+                 finalScore >= 150 ? '💪 Solid run! You earned...' :
+                 finalScore >= 50  ? '👍 Not bad! You earned...' :
                  '🌱 Keep practicing! You earned...'}
               </div>
 

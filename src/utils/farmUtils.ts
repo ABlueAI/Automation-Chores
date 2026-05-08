@@ -59,28 +59,28 @@ export const FOOD_MAP = Object.fromEntries(FOODS.map(f => [f.id, f]))
 
 interface TierEntry { weight: number; food: FoodDef }
 const T: Record<string, TierEntry[]> = {
-  tier0: [  // 0–99m
+  tier0: [  // 0–49m
     { weight: 60, food: FOOD_MAP['kibble'] },
     { weight: 40, food: FOOD_MAP['canned'] },
   ],
-  tier1: [  // 100–249m
+  tier1: [  // 50–149m
     { weight: 20, food: FOOD_MAP['kibble'] },
     { weight: 20, food: FOOD_MAP['canned'] },
     { weight: 35, food: FOOD_MAP['tuna'] },
     { weight: 25, food: FOOD_MAP['salmon'] },
   ],
-  tier2: [  // 250–499m
+  tier2: [  // 150–299m
     { weight: 10, food: FOOD_MAP['tuna'] },
     { weight: 10, food: FOOD_MAP['salmon'] },
     { weight: 45, food: FOOD_MAP['shrimp'] },
     { weight: 35, food: FOOD_MAP['chicken'] },
   ],
-  tier3: [  // 500–799m
+  tier3: [  // 300–449m
     { weight: 25, food: FOOD_MAP['shrimp'] },
     { weight: 30, food: FOOD_MAP['chicken'] },
     { weight: 45, food: FOOD_MAP['lobster'] },
   ],
-  tier4: [  // 800m+
+  tier4: [  // 450m+
     { weight: 75, food: FOOD_MAP['lobster'] },
     { weight: 25, food: FOOD_MAP['golden_rat'] },
   ],
@@ -97,10 +97,10 @@ function weightedPick(entries: TierEntry[]): FoodDef {
 }
 
 export function pickFood(score: number): FoodDef {
-  if (score >= 800) return weightedPick(T.tier4)
-  if (score >= 500) return weightedPick(T.tier3)
-  if (score >= 250) return weightedPick(T.tier2)
-  if (score >= 100) return weightedPick(T.tier1)
+  if (score >= 450) return weightedPick(T.tier4)
+  if (score >= 300) return weightedPick(T.tier3)
+  if (score >= 150) return weightedPick(T.tier2)
+  if (score >= 50)  return weightedPick(T.tier1)
   return weightedPick(T.tier0)
 }
 
