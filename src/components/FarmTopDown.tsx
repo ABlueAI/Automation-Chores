@@ -4,20 +4,25 @@ import { bestFoodInInventory, FOODS } from '../utils/farmUtils'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TS = 32
-const MW = 100, MH = 100
+const MW = 75, MH = 75
 const CW = 832, CH = 576
+const ZOOM = 2
+const VW = Math.round(CW / ZOOM)   // 416 — world pixels visible horizontally
+const VH = Math.round(CH / ZOOM)   // 288 — world pixels visible vertically
 
-const BARN_TX = 35, BARN_TY = 33, BARN_TW = 30, BARN_TH = 30
+const BARN_TX = 26, BARN_TY = 25, BARN_TW = 22, BARN_TH = 18
 const BARN_CX = BARN_TX + BARN_TW / 2   // barn center tile X
 const BARN_BOT = BARN_TY + BARN_TH      // barn bottom tile row
 
-const WATER_TX = 40, WATER_TY = 68
-const FOOD_TX  = 56, FOOD_TY  = 68
-const ARCADE_TX = 68, ARCADE_TY = 67
+const WATER_TX = 30, WATER_TY = 51
+const FOOD_TX  = 40, FOOD_TY  = 51
+const ARCADE_TX = 50, ARCADE_TY = 50
+
+const WILLOW_TX = 8, WILLOW_TY = 8     // weeping willow trunk top-left
 
 const FARMER_SPEED = 5   // tiles/sec
 const CAT_SPEED    = 1.4 // tiles/sec
-const S = 2              // pixel art scale (1 art-px = 2 canvas-px)
+const S = 5              // pixel art scale (1 art-px = 5 canvas-px)
 
 const SIGN_DEADLINE = new Date('2026-05-15T00:00:00').getTime()
 
@@ -70,12 +75,27 @@ const T_FLOWER = 1
 const T_DIRT   = 2
 const T_FENCE  = 3
 const T_BARN   = 4
+const T_TREE   = 5
 const WALKABLE = new Set([T_GRASS, T_FLOWER, T_DIRT])
+
+const FARMER_HW = 28   // farmer collision half-width (world px)
+const FARMER_HH = 10   // farmer collision half-height (world px, around feet)
+const CAT_HW    = 14
+const CAT_HH    = 8
+
+function walkablePt(map: Uint8Array, wx: number, wy: number): boolean {
+  const tx = Math.floor(wx / TS), ty = Math.floor(wy / TS)
+  return tx >= 0 && tx < MW && ty >= 0 && ty < MH && WALKABLE.has(map[ty*MW+tx])
+}
+function canMoveTo(map: Uint8Array, cx: number, cy: number, hw: number, hh: number): boolean {
+  return walkablePt(map, cx-hw, cy-hh) && walkablePt(map, cx+hw, cy-hh) &&
+         walkablePt(map, cx-hw, cy+hh) && walkablePt(map, cx+hw, cy+hh)
+}
 
 // ─── Map generation (stable via deterministic hash) ──────────────────────────
 let _mapCache: Uint8Array | null = null
 function buildMap(): Uint8Array {
-  if (_mapCache) return _mapCache
+  if (_mapCache && _mapCache.length === MW * MH) return _mapCache
   const m = new Uint8Array(MW * MH).fill(T_GRASS)
 
   // Flowers (deterministic scatter)
@@ -92,6 +112,11 @@ function buildMap(): Uint8Array {
   for (let ty = BARN_TY; ty < BARN_TY+BARN_TH; ty++)
     for (let tx = BARN_TX; tx < BARN_TX+BARN_TW; tx++)
       m[ty*MW+tx] = T_BARN
+
+  // Willow trunk (impassable — 2×3 tiles)
+  for (let ty = WILLOW_TY+2; ty < WILLOW_TY+5; ty++)
+    for (let tx = WILLOW_TX+1; tx < WILLOW_TX+3; tx++)
+      if (ty >= 1 && ty < MH-1 && tx >= 1 && tx < MW-1) m[ty*MW+tx] = T_TREE
 
   // Dirt path ring around barn
   for (let ty = BARN_TY-4; ty < BARN_BOT+4; ty++) {
@@ -139,10 +164,10 @@ function saveLove(id: CatId, data: Partial<StoredLove>) {
 // ─── Init helpers ─────────────────────────────────────────────────────────────
 function initCat(id: CatId): CatState {
   const stored = loadLove(id)
-  const startX = id === 'alco' ? BARN_TX - 2 : BARN_TX + BARN_TW + 1
+  const startX = id === 'alco' ? BARN_TX - 1 : BARN_TX + BARN_TW
   return {
-    id, pos: { x: (startX + 0.5)*TS, y: (BARN_BOT + 1.5)*TS },
-    target: { x: (startX + 0.5)*TS, y: (BARN_BOT + 1.5)*TS },
+    id, pos: { x: (startX + 0.5)*TS, y: (BARN_BOT + 2)*TS },
+    target: { x: (startX + 0.5)*TS, y: (BARN_BOT + 2)*TS },
     dir: 'down', anim: Math.random() < 0.7 ? 'sleep' : 'idle',
     frame: 0, animTimer: 0,
     stateTimer: Math.random() < 0.7 ? 8000 : 2000 + Math.random()*3000,
@@ -314,6 +339,84 @@ function drawArcade(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame
   ctx.fillStyle = '#334155'; ctx.fillRect(sx+2, sy+30, 28, 5)
   // Glow when player is near
   ctx.fillStyle = '#64748b'; ctx.fillRect(sx, sy+33, 32, 3)
+}
+
+// ─── Weeping willow ──────────────────────────────────────────────────────────
+function drawWillow(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame: number) {
+  const sw = 4*TS, sh = 7*TS   // sprite bounding box in world px
+  const cx = sx + sw/2          // center x
+
+  // Ground roots / soil
+  ctx.fillStyle = '#7a5c28'
+  ctx.fillRect(cx-18, sy+sh-14, 36, 8)
+  ctx.fillRect(cx-10, sy+sh-6,  20, 6)
+
+  // Trunk (thick, gnarled)
+  ctx.fillStyle = '#5c3d14'
+  ctx.fillRect(cx-16, sy+sh-70, 32, 66)
+  ctx.fillStyle = '#6b4a1a'
+  ctx.fillRect(cx-12, sy+sh-70, 8, 66)
+  ctx.fillRect(cx+4,  sy+sh-48, 6, 48)
+  // Bark lines
+  ctx.fillStyle = '#4a2f0a'
+  for (let i = 0; i < 4; i++) ctx.fillRect(cx-16, sy+sh-70+i*16, 32, 2)
+
+  // Main branches (fork out from upper trunk)
+  ctx.fillStyle = '#5c3d14'
+  ctx.fillRect(cx-36, sy+sh-110, 24, 10)
+  ctx.fillRect(cx+12, sy+sh-110, 24, 10)
+  ctx.fillRect(cx-20, sy+sh-130, 16, 8)
+  ctx.fillRect(cx+4,  sy+sh-130, 16, 8)
+
+  // Canopy core (dark green dome behind fronds)
+  ctx.fillStyle = '#1a5c1a'
+  ctx.fillRect(cx-60, sy+20, 120, 80)
+  ctx.fillRect(cx-50, sy+8,  100, 30)
+  ctx.fillStyle = '#246b24'
+  ctx.fillRect(cx-54, sy+14, 108, 70)
+
+  // Drooping frond curtains — many vertical strips with wavy offsets
+  const frondColors = ['#2d8b2d', '#34a334', '#246b24', '#1a5c1a']
+  const frondCount = 28
+  for (let i = 0; i < frondCount; i++) {
+    const fx = sx + 10 + i * (sw - 20) / (frondCount - 1)
+    const baseY = sy + 40 + ((i * 17 + 7) % 30)
+    const dropLen = 60 + ((i * 13 + 3) % 50) + Math.sin(frame * 0.02 + i * 0.7) * 6
+    ctx.fillStyle = frondColors[i % frondColors.length]
+    ctx.fillRect(fx, baseY, 4, dropLen)
+    // leaf clusters at tip
+    ctx.fillStyle = '#34a334'
+    ctx.fillRect(fx-3, baseY+dropLen-8, 10, 8)
+  }
+
+  // Bird's nests (3 nests in upper branches)
+  const nests: [number, number][] = [
+    [cx-38, sy+sh-118],
+    [cx+22, sy+sh-118],
+    [cx-8,  sy+sh-138],
+  ]
+  for (const [nx, ny] of nests) {
+    // Nest bowl
+    ctx.fillStyle = '#8b6914'
+    ctx.fillRect(nx, ny, 18, 10)
+    ctx.fillStyle = '#a07820'
+    ctx.fillRect(nx+2, ny+2, 14, 7)
+    ctx.fillStyle = '#c8a44a'
+    ctx.fillRect(nx+4, ny+4, 10, 4)
+    // Eggs
+    ctx.fillStyle = '#d4ecd4'
+    ctx.fillRect(nx+3, ny+2, 5, 4)
+    ctx.fillRect(nx+9, ny+2, 5, 4)
+    // Bird (tiny) perched on one nest
+    if (nx === nests[0][0]) {
+      const blink = frame % 120 < 8
+      ctx.fillStyle = '#374151'
+      ctx.fillRect(nx+18, ny-7, 7, 5)
+      ctx.fillRect(nx+22, ny-9, 4, 3)
+      if (!blink) { ctx.fillStyle = '#fbbf24'; ctx.fillRect(nx+25, ny-8, 2, 1) }  // eye
+      ctx.fillStyle = '#f59e0b'; ctx.fillRect(nx+22, ny-6, 3, 2)  // beak
+    }
+  }
 }
 
 // ─── Farmer drawing ───────────────────────────────────────────────────────────
@@ -586,11 +689,12 @@ function updateCat(cat: CatState, map: Uint8Array, farmer: FarmerState, dt: numb
   const dx = tx - px, dy = ty - py
   const dist = Math.sqrt(dx*dx + dy*dy)
 
-  // Move toward target
+  // Move toward target with collision
   if (dist > 2) {
     const spd = CAT_SPEED * TS * dt
-    cat.pos.x += (dx/dist)*spd
-    cat.pos.y += (dy/dist)*spd
+    const vx = (dx/dist)*spd, vy = (dy/dist)*spd
+    if (canMoveTo(map, cat.pos.x + vx, cat.pos.y, CAT_HW, CAT_HH)) cat.pos.x += vx
+    if (canMoveTo(map, cat.pos.x, cat.pos.y + vy, CAT_HW, CAT_HH)) cat.pos.y += vy
     cat.anim = 'walk'
     if (Math.abs(dx) > Math.abs(dy)) cat.dir = dx > 0 ? 'right' : 'left'
     else cat.dir = dy > 0 ? 'down' : 'up'
@@ -662,8 +766,8 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
     const map = buildMap()
     gsRef.current = {
       farmer: {
-        pos:    { x: (BARN_CX+0.5)*TS, y: (BARN_BOT+8)*TS },
-        target: { x: (BARN_CX+0.5)*TS, y: (BARN_BOT+8)*TS },
+        pos:    { x: (BARN_CX+0.5)*TS, y: (BARN_BOT+5)*TS },
+        target: { x: (BARN_CX+0.5)*TS, y: (BARN_BOT+5)*TS },
         dir: 'up', frame: 0, moving: false,
       },
       cats: [initCat('alco'), initCat('link')],
@@ -684,8 +788,8 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
   const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const gs = gsRef.current!
     const cpos = getCanvasPos(e)
-    const wx = cpos.x + gs.cam.x
-    const wy = cpos.y + gs.cam.y
+    const wx = cpos.x / ZOOM + gs.cam.x
+    const wy = cpos.y / ZOOM + gs.cam.y
     const now = Date.now()
     const last = lastClickRef.current
     const dbl = now - last.time < 350 && Math.abs(wx-last.wx) < 30 && Math.abs(wy-last.wy) < 30
@@ -758,13 +862,15 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
       gs.lastMs = nowMs
       gs.frame++
 
-      // Move farmer
+      // Move farmer with X/Y separated collision
       const f = gs.farmer
       const fdx = f.target.x - f.pos.x, fdy = f.target.y - f.pos.y
       const fdist = Math.sqrt(fdx*fdx + fdy*fdy)
       if (fdist > 2) {
         const spd = FARMER_SPEED * TS * dt
-        f.pos.x += (fdx/fdist)*spd; f.pos.y += (fdy/fdist)*spd
+        const vx = (fdx/fdist)*spd, vy = (fdy/fdist)*spd
+        if (canMoveTo(gs.map, f.pos.x + vx, f.pos.y, FARMER_HW, FARMER_HH)) f.pos.x += vx
+        if (canMoveTo(gs.map, f.pos.x, f.pos.y + vy, FARMER_HW, FARMER_HH)) f.pos.y += vy
         f.moving = true; f.frame += dt*60
         if (Math.abs(fdx) > Math.abs(fdy)) f.dir = fdx > 0 ? 'right' : 'left'
         else f.dir = fdy > 0 ? 'down' : 'up'
@@ -773,19 +879,24 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
       // Update cats
       for (const cat of gs.cats) updateCat(cat, gs.map, f, dt)
 
-      // Smooth camera follow
-      const targetCamX = f.pos.x - CW/2
-      const targetCamY = f.pos.y - CH/2
+      // Smooth camera follow (tracks in world coords, visible area = VW×VH)
+      const targetCamX = f.pos.x - VW/2
+      const targetCamY = f.pos.y - VH/2
       gs.cam.x += (targetCamX - gs.cam.x) * 0.1
       gs.cam.y += (targetCamY - gs.cam.y) * 0.1
-      gs.cam.x = Math.max(0, Math.min(MW*TS - CW, gs.cam.x))
-      gs.cam.y = Math.max(0, Math.min(MH*TS - CH, gs.cam.y))
+      gs.cam.x = Math.max(0, Math.min(MW*TS - VW, gs.cam.x))
+      gs.cam.y = Math.max(0, Math.min(MH*TS - VH, gs.cam.y))
 
       // ── Draw ──────────────────────────────────────────────────────────────
       const camX = gs.cam.x, camY = gs.cam.y
       const startTX = Math.floor(camX/TS), startTY = Math.floor(camY/TS)
-      const endTX = Math.min(MW, startTX + Math.ceil(CW/TS) + 2)
-      const endTY = Math.min(MH, startTY + Math.ceil(CH/TS) + 2)
+      const endTX = Math.min(MW, startTX + Math.ceil(VW/TS) + 2)
+      const endTY = Math.min(MH, startTY + Math.ceil(VH/TS) + 2)
+
+      // ── World drawing (all scaled by ZOOM) ────────────────────────────────
+      ctx.save()
+      ctx.scale(ZOOM, ZOOM)
+      ctx.imageSmoothingEnabled = false
 
       // Tiles
       for (let ty = startTY; ty < endTY; ty++) {
@@ -793,7 +904,8 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
           const tile = gs.map[ty*MW+tx]
           if (tile === T_BARN) continue
           const sx = Math.round(tx*TS - camX), sy = Math.round(ty*TS - camY)
-          drawTile(ctx, tile, sx, sy, ty*MW+tx)
+          // T_TREE trunk area: draw grass underneath so willow sits on green
+          drawTile(ctx, tile === T_TREE ? T_GRASS : tile, sx, sy, ty*MW+tx)
         }
       }
 
@@ -803,13 +915,16 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
       // Objects
       drawWaterBowl(ctx, Math.round(WATER_TX*TS - camX), Math.round(WATER_TY*TS - camY))
       drawFoodBowl(ctx, Math.round(FOOD_TX*TS - camX), Math.round(FOOD_TY*TS - camY), gs.foodBowlFood)
-      ctx.save(); ctx.imageSmoothingEnabled = false
       drawArcade(ctx, Math.round(ARCADE_TX*TS - camX), Math.round(ARCADE_TY*TS - camY), gs.frame)
-      ctx.restore()
 
-      // Sort entities by Y for depth
+      // Sort entities + willow by Y for depth
       type Entity = { y: number; draw: () => void }
       const entities: Entity[] = []
+      const willowWorldY = (WILLOW_TY + 7) * TS   // bottom of willow for sort
+      entities.push({
+        y: willowWorldY,
+        draw: () => drawWillow(ctx, Math.round(WILLOW_TX*TS - camX), Math.round(WILLOW_TY*TS - camY), gs.frame),
+      })
       entities.push({
         y: f.pos.y,
         draw: () => drawFarmer(ctx, Math.round(f.pos.x - camX), Math.round(f.pos.y - camY), f.dir, f.frame, f.moving),
@@ -825,11 +940,11 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
         })
       }
       entities.sort((a, b) => a.y - b.y)
-      ctx.save(); ctx.imageSmoothingEnabled = false
       for (const e of entities) e.draw()
-      ctx.restore()
 
-      // HUD
+      ctx.restore()   // back to 1:1 scale for HUD
+
+      // HUD (drawn in canvas px, not scaled)
       ctx.save()
       drawHUD(ctx, invRef.current, gs.cats)
       ctx.restore()
