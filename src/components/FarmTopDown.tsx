@@ -6,9 +6,9 @@ import { bestFoodInInventory, FOODS } from '../utils/farmUtils'
 const TS = 32
 const MW = 75, MH = 75
 const CW = 832, CH = 576
-const ZOOM = 2
-const VW = Math.round(CW / ZOOM)   // 416 — world pixels visible horizontally
-const VH = Math.round(CH / ZOOM)   // 288 — world pixels visible vertically
+const ZOOM = 1
+const VW = Math.round(CW / ZOOM)   // 832 — world pixels visible horizontally
+const VH = Math.round(CH / ZOOM)   // 576 — world pixels visible vertically
 
 const BARN_TX = 26, BARN_TY = 25, BARN_TW = 22, BARN_TH = 18
 const BARN_CX = BARN_TX + BARN_TW / 2   // barn center tile X
