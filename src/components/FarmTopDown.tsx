@@ -227,105 +227,110 @@ function drawBarn(ctx: CanvasRenderingContext2D, camX: number, camY: number) {
   ctx.fillStyle = 'rgba(0,0,0,0.22)'
   ctx.fillRect(bx+8, by+8, bw, bh)
 
-  // ── Roof (red, top-down) ──────────────────────────────────────────────────
-  ctx.fillStyle = '#c62828'
-  ctx.fillRect(bx, by, bw, bh)
-  // Roof plank shading (darker red lines)
-  ctx.fillStyle = '#b71c1c'
-  for (let i = 1; i < 10; i++) ctx.fillRect(bx + i*(bw/10), by, 3, bh)
-  // Subtle highlight streaks
-  ctx.fillStyle = 'rgba(255,255,255,0.07)'
-  for (let i = 0; i < 10; i++) ctx.fillRect(bx + i*(bw/10) + 4, by, bw/10 - 7, bh)
+  // ── Roof (gambrel arch suggestion, gray-brown) ────────────────────────────
+  const roofH = Math.round(bh * 0.6)
 
-  // ── White trim on roof edges ───────────────────────────────────────────────
-  const TW = 10  // trim width
-  ctx.fillStyle = '#f5f5f0'
-  ctx.fillRect(bx, by, TW, bh)
-  ctx.fillRect(bx+bw-TW, by, TW, bh)
-  ctx.fillRect(bx, by, bw, TW)
+  // Base roof fill
+  ctx.fillStyle = '#6b6858'
+  ctx.fillRect(bx, by, bw, roofH)
+  // Gambrel arch: stepped layers give arch/gable silhouette
+  ctx.fillStyle = '#7a786a'
+  ctx.fillRect(bx+16, by, bw-32, Math.round(roofH*0.45))
+  ctx.fillStyle = '#888075'
+  ctx.fillRect(bx+36, by, bw-72, Math.round(roofH*0.2))
 
-  // ── White south facade (front-facing wall) ────────────────────────────────
-  const FH = 80
-  const fy = by + bh - FH
-  ctx.fillStyle = '#f8f8f0'
-  ctx.fillRect(bx, fy, bw, FH)
+  // Horizontal roof plank lines
+  ctx.fillStyle = 'rgba(0,0,0,0.13)'
+  for (let i = 1; i < 12; i++) ctx.fillRect(bx, by + Math.round(i*roofH/12), bw, 2)
 
-  // Clapboard lines on facade
-  ctx.fillStyle = 'rgba(0,0,0,0.07)'
-  for (let i = 1; i <= 5; i++) ctx.fillRect(bx+TW, fy + i*(FH/6), bw-TW*2, 2)
+  // Ridge cap
+  ctx.fillStyle = '#4a4840'
+  ctx.fillRect(bx+20, by, bw-40, 6)
+  ctx.fillRect(bx+36, by, bw-72, 4)
 
-  // Red trim strips on facade
-  ctx.fillStyle = '#c62828'
-  ctx.fillRect(bx, fy, bw, 5)           // top edge
-  ctx.fillRect(bx, fy, TW, FH)          // left corner pillar
-  ctx.fillRect(bx+bw-TW, fy, TW, FH)   // right corner pillar
-  ctx.fillRect(bx, fy+FH-4, bw, 4)     // bottom sill
+  // Sheen strip
+  ctx.fillStyle = 'rgba(255,255,255,0.06)'
+  ctx.fillRect(bx+40, by+6, bw-80, Math.round(roofH*0.38))
 
-  // ── Windows (with white frames, blue glass) ───────────────────────────────
-  const winW = 44, winH = 34
-  for (const wox of [bx+TW+20, bx+bw-TW-20-winW]) {
-    const woy = fy + 12
-    ctx.fillStyle = '#c62828'; ctx.fillRect(wox-5, woy-5, winW+10, winH+10)
-    ctx.fillStyle = '#f5f5f0'; ctx.fillRect(wox-3, woy-3, winW+6, winH+6)
-    ctx.fillStyle = '#93c5fd'; ctx.fillRect(wox, woy, winW, winH)
-    ctx.fillStyle = '#f5f5f0'
-    ctx.fillRect(wox+winW/2-2, woy, 4, winH)
-    ctx.fillRect(wox, woy+winH/2-2, winW, 4)
-    ctx.fillStyle = '#bae6fd'; ctx.fillRect(wox+2, woy+2, 10, 8)
+  // ── Walls (warm red-orange wood planks) ───────────────────────────────────
+  const wallY = by + roofH
+  const wallH = bh - roofH
+
+  ctx.fillStyle = '#b84020'
+  ctx.fillRect(bx, wallY, bw, wallH)
+
+  // Horizontal plank lines
+  ctx.fillStyle = '#a03818'
+  for (let i = 0; i < 10; i++) ctx.fillRect(bx, wallY + Math.round(i*wallH/10), bw, 2)
+
+  // Corner trim (darker vertical strips)
+  const TRIM = 10
+  ctx.fillStyle = '#8c2e14'
+  ctx.fillRect(bx, wallY, TRIM, wallH)
+  ctx.fillRect(bx+bw-TRIM, wallY, TRIM, wallH)
+
+  // Top wall trim (cream band separating roof from wall)
+  ctx.fillStyle = '#e8d4a0'
+  ctx.fillRect(bx, wallY, bw, 5)
+
+  // ── Windows (cream frame, blue glass) ────────────────────────────────────
+  const winW = 42, winH = 32
+  const winY = wallY + 10
+  for (const wox of [bx+TRIM+18, bx+bw-TRIM-18-winW]) {
+    ctx.fillStyle = '#e8d4a0'; ctx.fillRect(wox-4, winY-4, winW+8, winH+8)
+    ctx.fillStyle = '#7cb8d4'; ctx.fillRect(wox, winY, winW, winH)
+    ctx.fillStyle = '#e8d4a0'
+    ctx.fillRect(wox+winW/2-2, winY, 4, winH)
+    ctx.fillRect(wox, winY+winH/2-2, winW, 4)
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(wox+2, winY+2, 10, 7)
   }
 
-  // ── Large white double barn door ──────────────────────────────────────────
-  const dw = 100, dh = FH - 10
-  const dx = bx + bw/2 - dw/2, dy = fy + 5
+  // ── Large sliding door with X bracing (center) ────────────────────────────
+  const dw = Math.round(bw*0.38)
+  const dh = wallH - 8
+  const dx = bx + Math.round(bw/2 - dw/2), dy = wallY + 4
 
-  // Door frame (red)
-  ctx.fillStyle = '#c62828'
-  ctx.fillRect(dx-8, dy-2, dw+16, dh+4)
+  // Cream door frame
+  ctx.fillStyle = '#e8d4a0'; ctx.fillRect(dx-6, dy-4, dw+12, dh+6)
 
-  // Door panels (white, two leaves)
-  const halfDW = dw/2 - 3
-  ctx.fillStyle = '#f8f8f0'
-  ctx.fillRect(dx, dy, halfDW, dh)
-  ctx.fillRect(dx+dw/2+3, dy, halfDW, dh)
+  // Door panel (warm wood)
+  ctx.fillStyle = '#c87840'; ctx.fillRect(dx, dy, dw, dh)
 
-  // Panel detail (recessed boxes)
-  ctx.fillStyle = '#e2e2d6'
-  ctx.fillRect(dx+5, dy+6, halfDW-10, dh/3-4)
-  ctx.fillRect(dx+5, dy+dh/3+4, halfDW-10, dh*2/3-12)
-  ctx.fillRect(dx+dw/2+8, dy+6, halfDW-10, dh/3-4)
-  ctx.fillRect(dx+dw/2+8, dy+dh/3+4, halfDW-10, dh*2/3-12)
+  // Vertical board lines
+  ctx.fillStyle = '#a86030'
+  for (let i = 1; i < 6; i++) ctx.fillRect(dx + Math.round(i*dw/6), dy, 2, dh)
 
-  // Center gap + handle dots
-  ctx.fillStyle = '#c62828'; ctx.fillRect(dx+dw/2-3, dy, 6, dh)
-  ctx.fillStyle = '#d4a843'
-  ctx.fillRect(dx+halfDW-6, dy+dh/2-3, 6, 6)
-  ctx.fillRect(dx+dw/2+3, dy+dh/2-3, 6, 6)
+  // X bracing (diagonal lines — canvas path, not fillRect)
+  ctx.save()
+  ctx.strokeStyle = '#7a4420'; ctx.lineWidth = 3
+  ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx+dw, dy+dh); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(dx+dw, dy); ctx.lineTo(dx, dy+dh); ctx.stroke()
+  ctx.restore()
+
+  // Door pull handle
+  ctx.fillStyle = '#d4a060'; ctx.fillRect(dx+dw-14, dy+Math.round(dh/2)-6, 10, 12)
+  ctx.fillStyle = '#a87840'; ctx.fillRect(dx+dw-12, dy+Math.round(dh/2)-4, 6, 8)
 
   // ── Crooked sign ON the barn door ─────────────────────────────────────────
   const signCX = dx + dw/2, signCY = dy + dh/2 - 10
   ctx.save()
   ctx.translate(signCX, signCY)
-  ctx.rotate(-0.13)   // crooked tilt
+  ctx.rotate(-0.13)
 
-  // Wooden planks of sign
-  ctx.fillStyle = '#c8a44a'
-  ctx.fillRect(-52, -18, 104, 36)
+  ctx.fillStyle = '#c8a44a'; ctx.fillRect(-52, -18, 104, 36)
   ctx.fillStyle = '#b8943a'
-  ctx.fillRect(-52, -4, 104, 3)   // wood grain line
+  ctx.fillRect(-52, -4, 104, 3)
   ctx.fillRect(-52, 4, 104, 3)
 
-  // Border
   ctx.fillStyle = '#8b6914'
   ctx.fillRect(-52, -18, 104, 3); ctx.fillRect(-52, 15, 104, 3)
   ctx.fillRect(-52, -18, 3, 36); ctx.fillRect(49, -18, 3, 36)
 
-  // Nail screws at corners
   ctx.fillStyle = '#5c3d0e'
   for (const [nx, ny] of [[-46,-13],[44,-13],[-46,10],[44,10]]) {
     ctx.fillRect(nx, ny, 4, 4)
   }
 
-  // Text
   ctx.fillStyle = '#3d2008'
   ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'
   ctx.fillText('✦ MORE TO COME ✦', 0, -4)
@@ -633,8 +638,8 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const W = 12*S, H = 12*S
   const sx = Math.round(wx - W/2)
   const sy = Math.round(wy - H)
-  const PUP = '#111827'           // pupil
-  const GLR = 'rgba(255,255,255,0.8)'  // eye glare
+  const PUP = '#111827'
+  const GLR = 'rgba(255,255,255,0.8)'
   const leg = anim === 'walk' ? Math.sin(frame*0.4)*1.5 : 0
 
   const f = (c: string, ax: number, ay: number, aw = 1, ah = 1) => {
@@ -643,24 +648,23 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
 
   // ── Sleep pose ────────────────────────────────────────────────────────────
   if (anim === 'sleep') {
-    // Tail curled around body first (behind)
-    f(C.body, 8,2, 3,7)
+    // Tail curled around right side (behind body)
+    f(C.body, 8,1, 3,8)
     f(C.body, 6,8, 3,1)
-    // Main body oval
-    f(C.body,  2,3, 8,7)
-    f(C.body,  1,4, 10,5)
-    f(C.belly, 3,5, 5,4)
-    // Head tucked (left side)
-    f(C.body, 1,2, 4,4)
-    f(C.body, 2,1, 3,2)
-    // Tiny ear nub
-    f(C.body, 2,0, 2,1)
-    f(C.ear,  2,0, 1,1)
-    // Closed eye (line)
+    // Main body oval (curled up)
+    f(C.body,  2,2, 8,8)
+    f(C.body,  1,3, 10,6)
+    f(C.belly, 3,4, 5,4)
+    // Head tucked at top-left
+    f(C.body, 1,1, 5,3)
+    f(C.body, 2,0, 3,2)
+    // Ear nub
+    f(C.body, 2,0, 2,1); f(C.ear, 2,0, 1,1)
+    // Closed eye (horizontal line)
     ctx.fillStyle = PUP
-    ctx.fillRect(sx+2*S, sy+3*S, 2*S, S)
+    ctx.fillRect(sx+2*S, sy+2*S, 3*S, S)
     // Nose
-    f(C.nose, 3,4, 1,1)
+    f(C.nose, 3,3, 1,1)
     // Link stripe
     if (id === 'link') { f(C.stripe,2,5,3,2) }
     // Zzz
@@ -673,91 +677,133 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     return
   }
 
-  // ── Facing down (front) ───────────────────────────────────────────────────
+  // ── Facing down (front, sitting) ──────────────────────────────────────────
   if (dir === 'down') {
-    // Pointed ears — triangular shape via stacked narrowing rows
-    f(C.body, 2,0, 1,1);  f(C.body, 9,0, 1,1)   // ear tips
-    f(C.ear,  2,0, 1,1);  f(C.ear,  9,0, 1,1)    // inner color at tip
-    f(C.body, 1,1, 3,2);  f(C.body, 8,1, 3,2)    // ear base
-    f(C.ear,  2,1, 1,1);  f(C.ear,  9,1, 1,1)    // inner ear
-    // Round head
+    // Ear tips pointing UP
+    f(C.body, 2,0, 1,1); f(C.ear, 2,0, 1,1)
+    f(C.body, 9,0, 1,1); f(C.ear, 9,0, 1,1)
+    // Ear bases
+    f(C.body, 1,1, 3,2); f(C.ear, 2,1, 1,1)
+    f(C.body, 8,1, 3,2); f(C.ear, 9,1, 1,1)
+    // Round head + wider mid
     f(C.body, 1,2, 10,6)
-    f(C.body, 0,3, 12,4)  // wider mid-section for roundness
-    // Muzzle (lighter oval) + nose
+    f(C.body, 0,3, 12,4)
+    // Muzzle patch + nose
     if (id === 'link') f(C.belly, 3,6, 6,2)
     f(C.nose, 5,6, 2,1)
-    // Eyes — 2×2 iris, 1×1 pupil, 1×1 glare
+    // Eyes (2×2 iris, pupil, glare)
     f(C.eye, 2,3, 2,2); f(PUP, 3,3, 1,2); f(GLR, 2,3, 1,1)
     f(C.eye, 8,3, 2,2); f(PUP, 8,3, 1,2); f(GLR, 8,3, 1,1)
     // Body
     f(C.body, 2,8, 8,3)
     f(C.belly, 3,8, 6,3)
     if (id === 'link') { f(C.stripe,2,9,2,2); f(C.stripe,8,9,2,2) }
-    // Tail (curves to right)
+    // Tail (curls to right, visible from front)
     f(C.body,10,7, 2,4); f(C.body, 9,10,2,1)
-    // Paws
+    // Front paws
     ctx.fillStyle = C.body
     ctx.fillRect(sx+2*S, sy+Math.round(11+leg)*S, 3*S, S)
     ctx.fillRect(sx+7*S, sy+Math.round(11-leg)*S, 3*S, S)
-    // Link toe beans
     if (id === 'link') { f(C.nose,2,11,1,1); f(C.nose,4,11,1,1); f(C.nose,7,11,1,1); f(C.nose,9,11,1,1) }
 
-  // ── Facing up (back) ──────────────────────────────────────────────────────
+  // ── Facing up (back) — tail straight up from center ───────────────────────
   } else if (dir === 'up') {
-    f(C.body, 2,0, 1,1);  f(C.body, 9,0, 1,1)
-    f(C.ear,  2,0, 1,1);  f(C.ear,  9,0, 1,1)
-    f(C.body, 1,1, 3,2);  f(C.body, 8,1, 3,2)
+    // Ears visible from back
+    f(C.body, 2,0, 1,1); f(C.ear, 2,0, 1,1)
+    f(C.body, 9,0, 1,1); f(C.ear, 9,0, 1,1)
+    f(C.body, 1,1, 3,2); f(C.ear, 2,1, 1,1)
+    f(C.body, 8,1, 3,2); f(C.ear, 9,1, 1,1)
+    // Back of head + body
     f(C.body, 1,2, 10,6)
     f(C.body, 0,3, 12,4)
     if (id === 'link') f(C.stripe, 2,4, 8,2)
     f(C.body, 2,8, 8,3)
     f(C.belly, 3,9, 6,2)
-    // Tail visible from back
-    f(C.body,10,7, 2,5); f(C.body, 9,11,2,1)
+    // Tail STRAIGHT UP from center-back (Stardew Valley signature)
+    f(C.body, 4,0, 4,1)   // tail base (wide)
+    f(C.body, 5,0, 2,7)   // tail shaft rising from back
+    // Paws
     ctx.fillStyle = C.body
     ctx.fillRect(sx+2*S, sy+Math.round(11+leg)*S, 3*S, S)
     ctx.fillRect(sx+7*S, sy+Math.round(11-leg)*S, 3*S, S)
 
-  // ── Facing right ──────────────────────────────────────────────────────────
+  // ── Facing right — head at right, tail at LEFT going UP ───────────────────
   } else if (dir === 'right') {
-    // Ear (right side)
-    f(C.body, 9,0, 2,1);  f(C.ear, 10,0, 1,1)
-    f(C.body, 8,1, 3,2);  f(C.ear,  9,1, 1,1)
-    // Round head + muzzle poke
-    f(C.body, 1,2, 10,6)
-    f(C.body, 0,3, 12,4)
-    f(C.body,10,6, 2,1)   // muzzle side
-    // Eye (single, right side)
-    f(C.eye, 8,3, 2,2); f(PUP, 9,3, 1,2); f(GLR, 8,3, 1,1)
-    f(C.nose,10,6, 1,1)
-    if (id === 'link') f(C.belly, 3,4, 5,4)
-    // Body
-    f(C.body, 1,8, 9,3)
-    f(C.belly, 2,8, 7,3)
-    if (id === 'link') { f(C.stripe,1,9,2,2); f(C.stripe,1,11,2,2) }
-    // Tail (left, curling)
-    f(C.body, 0,7, 2,4); f(C.body, 1,11,2,1)
-    ctx.fillStyle = C.body
-    ctx.fillRect(sx+3*S, sy+Math.round(11+leg)*S, 3*S, S)
-    ctx.fillRect(sx+6*S, sy+Math.round(11-leg)*S, 3*S, S)
+    // Tail at LEFT end, curves UP (Stardew Valley signature)
+    f(C.body, 1,0, 2,2)   // tail tip (slightly offset at top)
+    f(C.body, 0,2, 2,4)   // tail shaft rising up
+    f(C.body, 1,5, 2,1)   // tail base connecting to body
 
-  // ── Facing left ───────────────────────────────────────────────────────────
-  } else {
-    f(C.body, 1,0, 2,1);  f(C.ear,  1,0, 1,1)
-    f(C.body, 1,1, 3,2);  f(C.ear,  2,1, 1,1)
-    f(C.body, 1,2, 10,6)
-    f(C.body, 0,3, 12,4)
-    f(C.body, 0,6, 2,1)   // muzzle side
-    f(C.eye, 2,3, 2,2); f(PUP, 2,3, 1,2); f(GLR, 3,3, 1,1)
-    f(C.nose, 1,6, 1,1)
-    if (id === 'link') f(C.belly, 4,4, 5,4)
-    f(C.body, 2,8, 9,3)
-    f(C.belly, 3,8, 7,3)
-    if (id === 'link') { f(C.stripe,9,9,2,2); f(C.stripe,9,11,2,2) }
-    f(C.body,10,7, 2,4); f(C.body, 9,11,2,1)
+    // Ear at RIGHT/front, pointing UP
+    f(C.body, 9,0, 2,1);  f(C.ear, 9,0, 1,1)
+    f(C.body, 8,1, 3,2);  f(C.ear, 9,1, 1,1)
+
+    // Head (right side, cols 8-11)
+    f(C.body, 8,2, 4,5)
+
+    // Body (horizontal, cols 1-8)
+    f(C.body, 1,2, 7,4)
+    f(C.body, 0,3, 12,2)  // wider mid-row for roundness
+
+    // Belly (lighter underside)
+    f(C.belly, 2,3, 6,2)
+    if (id === 'link') f(C.belly, 9,4, 2,1)
+
+    // Eye (single, right side of head)
+    f(C.eye, 9,3, 2,2); f(PUP, 9,3, 1,2); f(GLR, 9,3, 1,1)
+
+    // Nose/muzzle (front tip of head)
+    f(C.body, 11,4, 1,1)
+    f(C.nose, 11,4, 1,1)
+
+    // Link stripe
+    if (id === 'link') { f(C.stripe, 2,3, 2,2); f(C.stripe, 4,2, 2,1) }
+
+    // 4 legs (alternating walk animation)
     ctx.fillStyle = C.body
-    ctx.fillRect(sx+3*S, sy+Math.round(11+leg)*S, 3*S, S)
-    ctx.fillRect(sx+6*S, sy+Math.round(11-leg)*S, 3*S, S)
+    ctx.fillRect(sx+2*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+4*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+6*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+8*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
+
+  // ── Facing left — head at left, tail at RIGHT going UP ────────────────────
+  } else {
+    // Tail at RIGHT end, curves UP
+    f(C.body, 9,0, 2,2)   // tail tip
+    f(C.body,10,2, 2,4)   // tail shaft
+    f(C.body, 9,5, 2,1)   // tail base
+
+    // Ear at LEFT/front, pointing UP
+    f(C.body, 1,0, 2,1);  f(C.ear, 1,0, 1,1)
+    f(C.body, 1,1, 3,2);  f(C.ear, 2,1, 1,1)
+
+    // Head (left side, cols 0-3)
+    f(C.body, 0,2, 4,5)
+
+    // Body (horizontal, cols 3-10)
+    f(C.body, 4,2, 7,4)
+    f(C.body, 0,3, 12,2)
+
+    // Belly
+    f(C.belly, 4,3, 6,2)
+    if (id === 'link') f(C.belly, 1,4, 2,1)
+
+    // Eye (single, left side of head)
+    f(C.eye, 1,3, 2,2); f(PUP, 1,3, 1,2); f(GLR, 2,3, 1,1)
+
+    // Nose/muzzle (front tip of head)
+    f(C.body, 0,4, 1,1)
+    f(C.nose, 0,4, 1,1)
+
+    // Link stripe
+    if (id === 'link') { f(C.stripe, 8,3, 2,2); f(C.stripe, 6,2, 2,1) }
+
+    // 4 legs
+    ctx.fillStyle = C.body
+    ctx.fillRect(sx+2*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+4*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+6*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+8*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
   }
 
   // Love hearts above head
