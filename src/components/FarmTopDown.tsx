@@ -6,9 +6,9 @@ import { bestFoodInInventory, FOODS } from '../utils/farmUtils'
 const TS = 32
 const MW = 75, MH = 75
 const CW = 832, CH = 576
-const ZOOM = 1
-const VW = Math.round(CW / ZOOM)   // 832 — world pixels visible horizontally
-const VH = Math.round(CH / ZOOM)   // 576 — world pixels visible vertically
+const ZOOM = 0.5
+const VW = Math.round(CW / ZOOM)   // 1664 — world pixels visible horizontally
+const VH = Math.round(CH / ZOOM)   // 1152 — world pixels visible vertically
 
 const BARN_TX = 26, BARN_TY = 25, BARN_TW = 22, BARN_TH = 18
 const BARN_CX = BARN_TX + BARN_TW / 2   // barn center tile X
@@ -22,7 +22,7 @@ const WILLOW_TX = 8, WILLOW_TY = 8     // weeping willow trunk top-left
 
 const FARMER_SPEED = 5   // tiles/sec
 const CAT_SPEED    = 1.4 // tiles/sec
-const S = 5              // pixel art scale (1 art-px = 5 canvas-px)
+const S = 10             // pixel art scale (1 art-px = 10 canvas-px)
 
 const SIGN_DEADLINE = new Date('2026-05-15T00:00:00').getTime()
 
