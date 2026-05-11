@@ -18,13 +18,13 @@ const WATER_TX = 30, WATER_TY = 51
 const FOOD_TX  = 40, FOOD_TY  = 51
 const ARCADE_TX = 50, ARCADE_TY = 50
 
-const WILLOW_TX = 8, WILLOW_TY = 8     // weeping willow trunk top-left
+const WILLOW_TX = 50, WILLOW_TY = 20   // weeping willow — right side of barn
 
 const FARMER_SPEED = 5   // tiles/sec
 const CAT_SPEED    = 1.4 // tiles/sec
 const S = 10             // pixel art scale (1 art-px = 10 canvas-px)
 
-const SIGN_DEADLINE = new Date('2026-05-15T00:00:00').getTime()
+const SIGN_DEADLINE = new Date('2026-05-16T00:00:00').getTime()  // 6 days from May 10
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Dir = 'down' | 'up' | 'left' | 'right'
@@ -113,9 +113,9 @@ function buildMap(): Uint8Array {
     for (let tx = BARN_TX; tx < BARN_TX+BARN_TW; tx++)
       m[ty*MW+tx] = T_BARN
 
-  // Willow trunk (impassable — 2×3 tiles)
-  for (let ty = WILLOW_TY+2; ty < WILLOW_TY+5; ty++)
-    for (let tx = WILLOW_TX+1; tx < WILLOW_TX+3; tx++)
+  // Willow trunk (impassable — tripled size, right of barn)
+  for (let ty = WILLOW_TY+14; ty < WILLOW_TY+21; ty++)
+    for (let tx = WILLOW_TX+3; tx < WILLOW_TX+9; tx++)
       if (ty >= 1 && ty < MH-1 && tx >= 1 && tx < MW-1) m[ty*MW+tx] = T_TREE
 
   // Dirt path ring around barn
@@ -224,279 +224,408 @@ function drawBarn(ctx: CanvasRenderingContext2D, camX: number, camY: number) {
   const bh = BARN_TH*TS
 
   // Drop shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'
   ctx.fillRect(bx+8, by+8, bw, bh)
 
-  // Roof body (viewed from above = red/dark)
-  ctx.fillStyle = '#7c1d1d'
+  // ── Roof (red, top-down) ──────────────────────────────────────────────────
+  ctx.fillStyle = '#c62828'
   ctx.fillRect(bx, by, bw, bh)
+  // Roof plank shading (darker red lines)
+  ctx.fillStyle = '#b71c1c'
+  for (let i = 1; i < 10; i++) ctx.fillRect(bx + i*(bw/10), by, 3, bh)
+  // Subtle highlight streaks
+  ctx.fillStyle = 'rgba(255,255,255,0.07)'
+  for (let i = 0; i < 10; i++) ctx.fillRect(bx + i*(bw/10) + 4, by, bw/10 - 7, bh)
 
-  // Roof planks
-  ctx.fillStyle = '#8b2020'
-  for (let i = 1; i < 8; i++) ctx.fillRect(bx + i*(bw/8), by, 3, bh)
-  ctx.fillStyle = 'rgba(255,255,255,0.04)'
-  for (let i = 1; i < 10; i++) ctx.fillRect(bx, by + i*(bh/10), bw, 2)
+  // ── White trim on roof edges ───────────────────────────────────────────────
+  const TW = 10  // trim width
+  ctx.fillStyle = '#f5f5f0'
+  ctx.fillRect(bx, by, TW, bh)
+  ctx.fillRect(bx+bw-TW, by, TW, bh)
+  ctx.fillRect(bx, by, bw, TW)
 
-  // Left window
-  const lw = bx + 44, lwy = by + bh - 96
-  ctx.fillStyle = '#8b3a10'; ctx.fillRect(lw-4, lwy-4, 52, 4); ctx.fillRect(lw-4, lwy-4, 4, 52)
-  ctx.fillStyle = '#8b3a10'; ctx.fillRect(lw+44, lwy-4, 4, 52); ctx.fillRect(lw-4, lwy+44, 52, 4)
-  ctx.fillStyle = '#93c5fd'; ctx.fillRect(lw, lwy, 44, 44)
-  ctx.fillStyle = '#7c1d1d'; ctx.fillRect(lw+20, lwy, 4, 44); ctx.fillRect(lw, lwy+20, 44, 4)
-  ctx.fillStyle = '#bae6fd'; ctx.fillRect(lw+2, lwy+2, 8, 8)
+  // ── White south facade (front-facing wall) ────────────────────────────────
+  const FH = 80
+  const fy = by + bh - FH
+  ctx.fillStyle = '#f8f8f0'
+  ctx.fillRect(bx, fy, bw, FH)
 
-  // Right window
-  const rw = bx + bw - 88, rwy = by + bh - 96
-  ctx.fillStyle = '#8b3a10'; ctx.fillRect(rw-4, rwy-4, 52, 4); ctx.fillRect(rw-4, rwy-4, 4, 52)
-  ctx.fillStyle = '#8b3a10'; ctx.fillRect(rw+44, rwy-4, 4, 52); ctx.fillRect(rw-4, rwy+44, 52, 4)
-  ctx.fillStyle = '#93c5fd'; ctx.fillRect(rw, rwy, 44, 44)
-  ctx.fillStyle = '#7c1d1d'; ctx.fillRect(rw+20, rwy, 4, 44); ctx.fillRect(rw, rwy+20, 44, 4)
-  ctx.fillStyle = '#bae6fd'; ctx.fillRect(rw+2, rwy+2, 8, 8)
+  // Clapboard lines on facade
+  ctx.fillStyle = 'rgba(0,0,0,0.07)'
+  for (let i = 1; i <= 5; i++) ctx.fillRect(bx+TW, fy + i*(FH/6), bw-TW*2, 2)
 
-  // South facade strip (makes barn look 3D from below)
-  const fy = by + bh - 56
-  ctx.fillStyle = '#9b2424'
-  ctx.fillRect(bx, fy, bw, 56)
-  ctx.fillStyle = 'rgba(0,0,0,0.08)'
-  for (let i = 1; i <= 3; i++) ctx.fillRect(bx, fy + i*14, bw, 2)
-  for (let i = 1; i < 10; i++) ctx.fillRect(bx + i*(bw/10), fy, 3, 56)
+  // Red trim strips on facade
+  ctx.fillStyle = '#c62828'
+  ctx.fillRect(bx, fy, bw, 5)           // top edge
+  ctx.fillRect(bx, fy, TW, FH)          // left corner pillar
+  ctx.fillRect(bx+bw-TW, fy, TW, FH)   // right corner pillar
+  ctx.fillRect(bx, fy+FH-4, bw, 4)     // bottom sill
 
-  // Gate
-  const gw = 80, gx = bx + bw/2 - gw/2
-  ctx.fillStyle = '#5c0f0f'; ctx.fillRect(gx, fy, gw, 56)
-  ctx.fillStyle = '#8b3a10'
-  ctx.fillRect(gx+36, fy, 8, 56)
-  ctx.fillRect(gx-4, fy, 4, 56); ctx.fillRect(gx+gw, fy, 4, 56)
-  ctx.fillRect(gx-4, fy-4, gw+8, 4)
-  // X on left door
-  ctx.fillStyle = '#7c2020'
-  ctx.fillRect(gx+4, fy+25, 32, 4); ctx.fillRect(gx+16, fy+4, 4, 52)
-  // X on right door
-  ctx.fillRect(gx+44, fy+25, 32, 4); ctx.fillRect(gx+56, fy+4, 4, 52)
+  // ── Windows (with white frames, blue glass) ───────────────────────────────
+  const winW = 44, winH = 34
+  for (const wox of [bx+TW+20, bx+bw-TW-20-winW]) {
+    const woy = fy + 12
+    ctx.fillStyle = '#c62828'; ctx.fillRect(wox-5, woy-5, winW+10, winH+10)
+    ctx.fillStyle = '#f5f5f0'; ctx.fillRect(wox-3, woy-3, winW+6, winH+6)
+    ctx.fillStyle = '#93c5fd'; ctx.fillRect(wox, woy, winW, winH)
+    ctx.fillStyle = '#f5f5f0'
+    ctx.fillRect(wox+winW/2-2, woy, 4, winH)
+    ctx.fillRect(wox, woy+winH/2-2, winW, 4)
+    ctx.fillStyle = '#bae6fd'; ctx.fillRect(wox+2, woy+2, 10, 8)
+  }
 
-  // Sign above gate
-  const sx2 = gx - 24, sy2 = fy - 48
-  ctx.fillStyle = '#c8a44a'; ctx.fillRect(sx2, sy2, gw+48, 36)
+  // ── Large white double barn door ──────────────────────────────────────────
+  const dw = 100, dh = FH - 10
+  const dx = bx + bw/2 - dw/2, dy = fy + 5
+
+  // Door frame (red)
+  ctx.fillStyle = '#c62828'
+  ctx.fillRect(dx-8, dy-2, dw+16, dh+4)
+
+  // Door panels (white, two leaves)
+  const halfDW = dw/2 - 3
+  ctx.fillStyle = '#f8f8f0'
+  ctx.fillRect(dx, dy, halfDW, dh)
+  ctx.fillRect(dx+dw/2+3, dy, halfDW, dh)
+
+  // Panel detail (recessed boxes)
+  ctx.fillStyle = '#e2e2d6'
+  ctx.fillRect(dx+5, dy+6, halfDW-10, dh/3-4)
+  ctx.fillRect(dx+5, dy+dh/3+4, halfDW-10, dh*2/3-12)
+  ctx.fillRect(dx+dw/2+8, dy+6, halfDW-10, dh/3-4)
+  ctx.fillRect(dx+dw/2+8, dy+dh/3+4, halfDW-10, dh*2/3-12)
+
+  // Center gap + handle dots
+  ctx.fillStyle = '#c62828'; ctx.fillRect(dx+dw/2-3, dy, 6, dh)
+  ctx.fillStyle = '#d4a843'
+  ctx.fillRect(dx+halfDW-6, dy+dh/2-3, 6, 6)
+  ctx.fillRect(dx+dw/2+3, dy+dh/2-3, 6, 6)
+
+  // ── Crooked sign ON the barn door ─────────────────────────────────────────
+  const signCX = dx + dw/2, signCY = dy + dh/2 - 10
+  ctx.save()
+  ctx.translate(signCX, signCY)
+  ctx.rotate(-0.13)   // crooked tilt
+
+  // Wooden planks of sign
+  ctx.fillStyle = '#c8a44a'
+  ctx.fillRect(-52, -18, 104, 36)
+  ctx.fillStyle = '#b8943a'
+  ctx.fillRect(-52, -4, 104, 3)   // wood grain line
+  ctx.fillRect(-52, 4, 104, 3)
+
+  // Border
   ctx.fillStyle = '#8b6914'
-  ctx.fillRect(sx2, sy2, gw+48, 3); ctx.fillRect(sx2, sy2+33, gw+48, 3)
-  ctx.fillRect(sx2, sy2, 3, 36); ctx.fillRect(sx2+gw+45, sy2, 3, 36)
-  ctx.fillStyle = '#5c3d0e'
-  ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'
-  ctx.fillText('✦ MORE TO COME ✦', sx2 + (gw+48)/2, sy2+14)
-  const ms = SIGN_DEADLINE - Date.now()
-  const days = Math.max(0, Math.ceil(ms/86400000))
-  ctx.font = '9px monospace'
-  ctx.fillText(ms > 0 ? `${days}d remaining` : 'Coming soon!', sx2+(gw+48)/2, sy2+28)
+  ctx.fillRect(-52, -18, 104, 3); ctx.fillRect(-52, 15, 104, 3)
+  ctx.fillRect(-52, -18, 3, 36); ctx.fillRect(49, -18, 3, 36)
 
-  // Weather vane
+  // Nail screws at corners
+  ctx.fillStyle = '#5c3d0e'
+  for (const [nx, ny] of [[-46,-13],[44,-13],[-46,10],[44,10]]) {
+    ctx.fillRect(nx, ny, 4, 4)
+  }
+
+  // Text
+  ctx.fillStyle = '#3d2008'
+  ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'
+  ctx.fillText('✦ MORE TO COME ✦', 0, -4)
+  const ms = SIGN_DEADLINE - Date.now()
+  const days = Math.max(0, Math.ceil(ms / 86400000))
+  ctx.font = '8px monospace'
+  ctx.fillText(ms > 0 ? `${days} days remaining` : 'Opening soon!', 0, 11)
+  ctx.restore()
+
+  // ── Weather vane ──────────────────────────────────────────────────────────
   const wvx = bx + bw/2
-  ctx.fillStyle = '#6b7280'; ctx.fillRect(wvx-2, by+2, 4, 28); ctx.fillRect(wvx-18, by+10, 36, 4)
-  ctx.fillStyle = '#9ca3af'; ctx.fillRect(wvx-16, by+8, 14, 8); ctx.fillRect(wvx+2, by+8, 14, 8)
-  ctx.fillStyle = '#fbbf24'; ctx.fillRect(wvx-2, by+2, 4, 4)
+  ctx.fillStyle = '#78716c'; ctx.fillRect(wvx-2, by+2, 4, 24); ctx.fillRect(wvx-16, by+10, 32, 4)
+  ctx.fillStyle = '#a8a29e'; ctx.fillRect(wvx-14, by+8, 12, 8); ctx.fillRect(wvx+2, by+8, 12, 8)
+  ctx.fillStyle = '#fbbf24'; ctx.fillRect(wvx-2, by, 4, 5)
 }
 
 // ─── Object drawing ───────────────────────────────────────────────────────────
 function drawWaterBowl(ctx: CanvasRenderingContext2D, sx: number, sy: number) {
-  ctx.fillStyle = '#374151'; ctx.fillRect(sx+2, sy+18, 28, 10)
-  ctx.fillStyle = '#1d4ed8'; ctx.fillRect(sx+4, sy+20, 24, 7)
-  ctx.fillStyle = '#93c5fd'; ctx.fillRect(sx+6, sy+21, 8, 3)
-  ctx.fillStyle = '#4b5563'; ctx.fillRect(sx, sy+26, 32, 5)
+  const k = 3   // scale-up factor (was ~32px, now ~96px wide)
+  // Label above
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'
+  ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('💧 Water', sx+12*k, sy+4)
+  // Stand legs
+  ctx.fillStyle = '#374151'
+  ctx.fillRect(sx+2*k, sy+22*k, 4*k, 10*k)
+  ctx.fillRect(sx+18*k, sy+22*k, 4*k, 10*k)
+  // Bowl outer
+  ctx.fillStyle = '#4b5563'
+  ctx.fillRect(sx, sy+10*k, 24*k, 14*k)
+  ctx.fillRect(sx+1*k, sy+9*k, 22*k, 3*k)  // rim
+  // Water fill
+  ctx.fillStyle = '#1d4ed8'
+  ctx.fillRect(sx+2*k, sy+12*k, 20*k, 10*k)
+  // Shimmer
+  ctx.fillStyle = '#93c5fd'
+  ctx.fillRect(sx+3*k, sy+13*k, 7*k, 3*k)
+  ctx.fillRect(sx+14*k, sy+15*k, 4*k, 2*k)
+  // Base
+  ctx.fillStyle = '#6b7280'
+  ctx.fillRect(sx-1*k, sy+30*k, 26*k, 4*k)
 }
 
 function drawFoodBowl(ctx: CanvasRenderingContext2D, sx: number, sy: number, foodId: string | null) {
-  ctx.fillStyle = '#4b5563'; ctx.fillRect(sx+2, sy+18, 28, 10)
-  if (foodId) {
-    const food = FOODS.find(f => f.id === foodId)
-    ctx.fillStyle = food?.bgColor ?? '#d4a84a'
-    ctx.fillRect(sx+4, sy+20, 24, 7)
-    ctx.fillStyle = '#f0e0a0'; ctx.fillRect(sx+6, sy+21, 6, 3)
-    // food emoji tiny
-    ctx.font = '12px serif'; ctx.textAlign = 'center'
-    ctx.fillText(food?.emoji ?? '🍖', sx+16, sy+17)
+  const k = 3
+  const food = foodId ? FOODS.find(f => f.id === foodId) : null
+  // Label above
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'
+  ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('🍽️ Food', sx+12*k, sy+4)
+  // Stand legs
+  ctx.fillStyle = '#374151'
+  ctx.fillRect(sx+2*k, sy+22*k, 4*k, 10*k)
+  ctx.fillRect(sx+18*k, sy+22*k, 4*k, 10*k)
+  // Bowl outer
+  ctx.fillStyle = '#4b5563'
+  ctx.fillRect(sx, sy+10*k, 24*k, 14*k)
+  ctx.fillRect(sx+1*k, sy+9*k, 22*k, 3*k)
+  // Fill (food or empty)
+  if (food) {
+    ctx.fillStyle = food.bgColor
+    ctx.fillRect(sx+2*k, sy+12*k, 20*k, 10*k)
+    ctx.fillStyle = '#f0e0a0'; ctx.fillRect(sx+3*k, sy+13*k, 5*k, 3*k)
+    ctx.font = '26px serif'; ctx.textAlign = 'center'
+    ctx.fillText(food.emoji, sx+12*k, sy+10*k)
   } else {
-    ctx.fillStyle = '#374151'; ctx.fillRect(sx+4, sy+20, 24, 7)
+    ctx.fillStyle = '#2d3748'; ctx.fillRect(sx+2*k, sy+12*k, 20*k, 10*k)
   }
-  ctx.fillStyle = '#6b7280'; ctx.fillRect(sx, sy+26, 32, 5)
+  // Base
+  ctx.fillStyle = '#6b7280'
+  ctx.fillRect(sx-1*k, sy+30*k, 26*k, 4*k)
 }
 
 function drawArcade(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame: number) {
-  // Cabinet
-  ctx.fillStyle = '#1e293b'; ctx.fillRect(sx+4, sy+2, 24, 30)
-  ctx.fillStyle = '#0f172a'; ctx.fillRect(sx+6, sy+5, 20, 14)
-  // Screen glow
-  ctx.fillStyle = '#15803d'; ctx.fillRect(sx+7, sy+6, 18, 12)
-  ctx.fillStyle = '#4ade80'; ctx.fillRect(sx+8, sy+7, 3, 3); ctx.fillRect(sx+16, sy+11, 2, 2)
-  if (frame % 60 < 30) ctx.fillRect(sx+12, sy+9, 4, 2)
-  // Label strip
-  ctx.fillStyle = '#fbbf24'; ctx.fillRect(sx+6, sy+20, 20, 4)
-  ctx.fillStyle = '#1e293b'; ctx.font = '5px monospace'; ctx.textAlign = 'center'
-  ctx.fillText('PLAY', sx+16, sy+24)
-  // Buttons
-  ctx.fillStyle = '#ef4444'; ctx.fillRect(sx+7, sy+26, 5, 5)
-  ctx.fillStyle = '#3b82f6'; ctx.fillRect(sx+14, sy+26, 5, 5)
-  ctx.fillStyle = '#22c55e'; ctx.fillRect(sx+21, sy+26, 5, 5)
+  const k = 2.8 | 0   // scale factor — 2 gives ~64px wide cabinet
+  // Label above
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'
+  ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('🕹️ Arcade', sx+15*k, sy+4)
+  // Cabinet body
+  ctx.fillStyle = '#1e293b'; ctx.fillRect(sx+2*k, sy+6*k, 26*k, 36*k)
+  // Cabinet top curve suggestion
+  ctx.fillStyle = '#0f172a'; ctx.fillRect(sx+3*k, sy+6*k, 24*k, 4*k)
+  // Screen bezel
+  ctx.fillStyle = '#0f172a'; ctx.fillRect(sx+4*k, sy+10*k, 22*k, 16*k)
+  // Screen glow (green like a retro game)
+  ctx.fillStyle = '#14532d'; ctx.fillRect(sx+5*k, sy+11*k, 20*k, 14*k)
+  ctx.fillStyle = '#16a34a'; ctx.fillRect(sx+6*k, sy+12*k, 18*k, 12*k)
+  // Screen content (animated pixel blobs = game)
+  ctx.fillStyle = '#4ade80'
+  ctx.fillRect(sx+7*k, sy+13*k, 3*k, 3*k)
+  ctx.fillRect(sx+12*k, sy+15*k, 2*k, 2*k)
+  ctx.fillRect(sx+18*k, sy+13*k, 3*k, 3*k)
+  if (frame % 60 < 30) {
+    ctx.fillStyle = '#86efac'
+    ctx.fillRect(sx+10*k, sy+14*k, 5*k, 2*k)
+    ctx.fillRect(sx+7*k, sy+17*k, 2*k, 2*k)
+    ctx.fillRect(sx+17*k, sy+17*k, 2*k, 2*k)
+  }
+  // Marquee banner
+  ctx.fillStyle = '#fbbf24'; ctx.fillRect(sx+4*k, sy+27*k, 22*k, 5*k)
+  ctx.fillStyle = '#1e293b'; ctx.font = `${6*k}px monospace`; ctx.textAlign = 'center'
+  ctx.fillText('CRUSH', sx+15*k, sy+31*k)
+  // Control panel
+  ctx.fillStyle = '#334155'; ctx.fillRect(sx+2*k, sy+32*k, 26*k, 8*k)
+  // Joystick
+  ctx.fillStyle = '#1e293b'; ctx.fillRect(sx+5*k, sy+33*k, 4*k, 4*k)
+  ctx.fillStyle = '#64748b'; ctx.fillRect(sx+6*k, sy+32*k, 2*k, 6*k)
+  // Buttons (3 colors)
+  ctx.fillStyle = '#ef4444'; ctx.fillRect(sx+13*k, sy+33*k, 3*k, 3*k)
+  ctx.fillStyle = '#3b82f6'; ctx.fillRect(sx+18*k, sy+33*k, 3*k, 3*k)
+  ctx.fillStyle = '#22c55e'; ctx.fillRect(sx+23*k, sy+33*k, 3*k, 3*k)
   // Base
-  ctx.fillStyle = '#334155'; ctx.fillRect(sx+2, sy+30, 28, 5)
-  // Glow when player is near
-  ctx.fillStyle = '#64748b'; ctx.fillRect(sx, sy+33, 32, 3)
+  ctx.fillStyle = '#1e293b'; ctx.fillRect(sx, sy+40*k, 30*k, 4*k)
+  ctx.fillStyle = '#475569'; ctx.fillRect(sx-1*k, sy+43*k, 32*k, 3*k)
 }
 
-// ─── Weeping willow ──────────────────────────────────────────────────────────
+// ─── Weeping willow (tripled size) ────────────────────────────────────────────
 function drawWillow(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame: number) {
-  const sw = 4*TS, sh = 7*TS   // sprite bounding box in world px
-  const cx = sx + sw/2          // center x
+  const k = 3
+  const sw = 4*TS*k, sh = 7*TS*k
+  const cx = sx + sw/2
 
   // Ground roots / soil
   ctx.fillStyle = '#7a5c28'
-  ctx.fillRect(cx-18, sy+sh-14, 36, 8)
-  ctx.fillRect(cx-10, sy+sh-6,  20, 6)
+  ctx.fillRect(cx-18*k, sy+sh-14*k, 36*k, 8*k)
+  ctx.fillRect(cx-10*k, sy+sh-6*k,  20*k, 6*k)
 
-  // Trunk (thick, gnarled)
+  // Trunk
   ctx.fillStyle = '#5c3d14'
-  ctx.fillRect(cx-16, sy+sh-70, 32, 66)
+  ctx.fillRect(cx-16*k, sy+sh-70*k, 32*k, 66*k)
   ctx.fillStyle = '#6b4a1a'
-  ctx.fillRect(cx-12, sy+sh-70, 8, 66)
-  ctx.fillRect(cx+4,  sy+sh-48, 6, 48)
-  // Bark lines
+  ctx.fillRect(cx-12*k, sy+sh-70*k, 8*k, 66*k)
+  ctx.fillRect(cx+4*k,  sy+sh-48*k, 6*k, 48*k)
   ctx.fillStyle = '#4a2f0a'
-  for (let i = 0; i < 4; i++) ctx.fillRect(cx-16, sy+sh-70+i*16, 32, 2)
+  for (let i = 0; i < 6; i++) ctx.fillRect(cx-16*k, sy+sh-70*k+i*11*k, 32*k, 2*k)
 
-  // Main branches (fork out from upper trunk)
+  // Main branches
   ctx.fillStyle = '#5c3d14'
-  ctx.fillRect(cx-36, sy+sh-110, 24, 10)
-  ctx.fillRect(cx+12, sy+sh-110, 24, 10)
-  ctx.fillRect(cx-20, sy+sh-130, 16, 8)
-  ctx.fillRect(cx+4,  sy+sh-130, 16, 8)
+  ctx.fillRect(cx-36*k, sy+sh-110*k, 24*k, 10*k)
+  ctx.fillRect(cx+12*k, sy+sh-110*k, 24*k, 10*k)
+  ctx.fillRect(cx-20*k, sy+sh-130*k, 16*k, 8*k)
+  ctx.fillRect(cx+4*k,  sy+sh-130*k, 16*k, 8*k)
+  ctx.fillRect(cx-8*k,  sy+sh-150*k, 16*k, 6*k)
 
-  // Canopy core (dark green dome behind fronds)
+  // Canopy core dome
   ctx.fillStyle = '#1a5c1a'
-  ctx.fillRect(cx-60, sy+20, 120, 80)
-  ctx.fillRect(cx-50, sy+8,  100, 30)
+  ctx.fillRect(cx-60*k, sy+20*k, 120*k, 80*k)
+  ctx.fillRect(cx-50*k, sy+8*k,  100*k, 30*k)
   ctx.fillStyle = '#246b24'
-  ctx.fillRect(cx-54, sy+14, 108, 70)
+  ctx.fillRect(cx-54*k, sy+14*k, 108*k, 70*k)
+  ctx.fillStyle = '#2d7a2d'
+  ctx.fillRect(cx-44*k, sy+10*k, 88*k, 50*k)
 
-  // Drooping frond curtains — many vertical strips with wavy offsets
-  const frondColors = ['#2d8b2d', '#34a334', '#246b24', '#1a5c1a']
-  const frondCount = 28
+  // Drooping frond curtains
+  const frondColors = ['#2d8b2d', '#34a334', '#246b24', '#1a5c1a', '#3a9e3a']
+  const frondCount = 36
   for (let i = 0; i < frondCount; i++) {
-    const fx = sx + 10 + i * (sw - 20) / (frondCount - 1)
-    const baseY = sy + 40 + ((i * 17 + 7) % 30)
-    const dropLen = 60 + ((i * 13 + 3) % 50) + Math.sin(frame * 0.02 + i * 0.7) * 6
+    const fx = sx + 8*k + i * (sw - 16*k) / (frondCount - 1)
+    const baseY = sy + 38*k + ((i * 17 + 7) % 30)*k
+    const dropLen = (55 + ((i * 13 + 3) % 55))*k + Math.sin(frame * 0.018 + i * 0.65) * 8*k
     ctx.fillStyle = frondColors[i % frondColors.length]
-    ctx.fillRect(fx, baseY, 4, dropLen)
-    // leaf clusters at tip
-    ctx.fillStyle = '#34a334'
-    ctx.fillRect(fx-3, baseY+dropLen-8, 10, 8)
+    ctx.fillRect(fx, baseY, 4*k, dropLen)
+    ctx.fillStyle = '#4aad4a'
+    ctx.fillRect(fx-3*k, baseY+dropLen-8*k, 10*k, 8*k)
   }
 
-  // Bird's nests (3 nests in upper branches)
+  // Bird's nests
   const nests: [number, number][] = [
-    [cx-38, sy+sh-118],
-    [cx+22, sy+sh-118],
-    [cx-8,  sy+sh-138],
+    [cx-40*k, sy+sh-118*k],
+    [cx+24*k, sy+sh-118*k],
+    [cx-8*k,  sy+sh-142*k],
   ]
   for (const [nx, ny] of nests) {
-    // Nest bowl
-    ctx.fillStyle = '#8b6914'
-    ctx.fillRect(nx, ny, 18, 10)
-    ctx.fillStyle = '#a07820'
-    ctx.fillRect(nx+2, ny+2, 14, 7)
-    ctx.fillStyle = '#c8a44a'
-    ctx.fillRect(nx+4, ny+4, 10, 4)
-    // Eggs
+    ctx.fillStyle = '#8b6914'; ctx.fillRect(nx, ny, 18*k, 10*k)
+    ctx.fillStyle = '#a07820'; ctx.fillRect(nx+2*k, ny+2*k, 14*k, 7*k)
+    ctx.fillStyle = '#c8a44a'; ctx.fillRect(nx+4*k, ny+4*k, 10*k, 4*k)
     ctx.fillStyle = '#d4ecd4'
-    ctx.fillRect(nx+3, ny+2, 5, 4)
-    ctx.fillRect(nx+9, ny+2, 5, 4)
-    // Bird (tiny) perched on one nest
+    ctx.fillRect(nx+3*k, ny+2*k, 5*k, 4*k)
+    ctx.fillRect(nx+9*k, ny+2*k, 5*k, 4*k)
     if (nx === nests[0][0]) {
       const blink = frame % 120 < 8
       ctx.fillStyle = '#374151'
-      ctx.fillRect(nx+18, ny-7, 7, 5)
-      ctx.fillRect(nx+22, ny-9, 4, 3)
-      if (!blink) { ctx.fillStyle = '#fbbf24'; ctx.fillRect(nx+25, ny-8, 2, 1) }  // eye
-      ctx.fillStyle = '#f59e0b'; ctx.fillRect(nx+22, ny-6, 3, 2)  // beak
+      ctx.fillRect(nx+18*k, ny-7*k, 7*k, 5*k)
+      ctx.fillRect(nx+22*k, ny-9*k, 4*k, 3*k)
+      if (!blink) { ctx.fillStyle = '#fbbf24'; ctx.fillRect(nx+25*k, ny-8*k, 2*k, k) }
+      ctx.fillStyle = '#f59e0b'; ctx.fillRect(nx+22*k, ny-6*k, 3*k, 2*k)
     }
   }
 }
 
-// ─── Farmer drawing ───────────────────────────────────────────────────────────
+// ─── Farmer drawing (cute chibi kid-friendly) ─────────────────────────────────
 function drawFarmer(ctx: CanvasRenderingContext2D, wx: number, wy: number, dir: Dir, frame: number, moving: boolean) {
-  // wx/wy = world pixel position (center-bottom of sprite)
   const W = 12*S, H = 17*S
   const sx = Math.round(wx - W/2)
   const sy = Math.round(wy - H)
-
   const f = (c: string, ax: number, ay: number, aw = 1, ah = 1) => {
     ctx.fillStyle = c; ctx.fillRect(sx+ax*S, sy+ay*S, aw*S, ah*S)
   }
-  const leg = moving ? Math.sin(frame*0.35)*2 : 0
+  const leg = moving ? Math.sin(frame*0.35)*1.5 : 0
+
+  // Shared palette
+  const HAT   = '#e8c94a'   // bright straw hat
+  const HATB  = '#a07818'   // hat band
+  const BRIM  = '#f0d860'   // hat brim lighter
+  const SKIN  = '#ffd5a8'   // face
+  const SKIN2 = '#ffc990'   // slightly darker for chin
+  const EYE   = '#1a1a3e'   // eye dark
+  const GLARE = '#ffffff'
+  const BLUSH = '#ffaabb'   // rosy cheeks
+  const SHIRT = '#e8f0ff'   // white-ish shirt
+  const OVR   = '#4a90e2'   // overalls bright blue
+  const OVR2  = '#6aacf8'   // bib highlight
+  const BOOT  = '#6b3a1e'
+
+  const drawHat = () => {
+    f(HAT,  3,0, 6,1)         // hat top
+    f(HAT,  2,1, 8,2)         // hat crown
+    f(HATB, 2,2, 8,1)         // band
+    f(BRIM, 1,3, 10,1)        // wide brim
+    f(HAT,  0,3, 1,1)         // brim shadow L
+    f(HAT, 11,3, 1,1)         // brim shadow R
+  }
 
   if (dir === 'down') {
-    f('#d4b660', 1,0, 10,1)        // hat brim
-    f('#c8a44a', 3,1, 6,3)         // hat crown
-    f('#7c2d12', 3,3, 6,1)         // hat band
-    f('#fcd9b2', 2,4, 8,5)         // face
-    f('#1f2937', 3,5, 2,2)         // left eye
-    f('#1f2937', 7,5, 2,2)         // right eye
-    f('#f9a8d4', 5,7, 2,1)         // nose
-    f('#fef2d5', 1,9, 2,4)         // L sleeve
-    f('#fef2d5', 9,9, 2,4)         // R sleeve
-    f('#3b82f6', 3,9, 6,5)         // overalls
-    f('#60a5fa', 4,9, 4,2)         // bib highlight
-    f('#2563eb', 4,10, 2,2)        // pocket
-    ctx.fillStyle = '#2563eb'
-    ctx.fillRect(sx+3*S, sy+(13+leg)*S, 3*S, 4*S)     // L leg
-    ctx.fillRect(sx+6*S, sy+(13-leg)*S, 3*S, 4*S)     // R leg
-    f('#7c2d12', 3, 17, 3,1)        // L boot (approx, for frame offsets use inline)
-    f('#7c2d12', 6, 17, 3,1)
+    drawHat()
+    // Round face
+    f(SKIN,  2,4, 8,6)
+    f(SKIN2, 2,4, 8,1)        // forehead shade
+    // Big cute eyes (2×2 + glare dot)
+    f(EYE,   3,5, 2,2); f(GLARE, 3,5, 1,1)
+    f(EYE,   7,5, 2,2); f(GLARE, 7,5, 1,1)
+    // Rosy cheeks
+    f(BLUSH, 2,7, 2,1)
+    f(BLUSH, 8,7, 2,1)
+    // Happy mouth (U-shape)
+    f(SKIN2, 4,8, 4,1)
+    f(EYE,   4,8, 1,1)
+    f(EYE,   7,8, 1,1)
+    f(EYE,   5,9, 2,1)
+    // Shirt peek + overalls
+    f(SHIRT, 3,10, 6,1)
+    f(OVR,   2,11, 8,5)
+    f(OVR2,  4,11, 4,2)       // bib sheen
+    // Legs (waddle)
+    ctx.fillStyle = OVR
+    ctx.fillRect(sx+3*S, sy+Math.round(16+leg)*S, 2*S, 1*S)
+    ctx.fillRect(sx+7*S, sy+Math.round(16-leg)*S, 2*S, 1*S)
+    f(BOOT, 2,17, 4,1); f(BOOT, 6,17, 4,1)
+
   } else if (dir === 'up') {
-    f('#d4b660', 1,0, 10,1)
-    f('#c8a44a', 3,1, 6,3)
-    f('#7c2d12', 3,3, 6,1)
-    f('#fcd9b2', 2,4, 8,5)         // back of head
-    f('#92400e', 2,4, 8,3)         // hair visible from back
-    f('#fef2d5', 1,9, 2,4)
-    f('#fef2d5', 9,9, 2,4)
-    f('#3b82f6', 3,9, 6,5)
-    ctx.fillStyle = '#2563eb'
-    ctx.fillRect(sx+3*S, sy+(13+leg)*S, 3*S, 4*S)
-    ctx.fillRect(sx+6*S, sy+(13-leg)*S, 3*S, 4*S)
-    f('#7c2d12', 3,17, 3,1); f('#7c2d12', 6,17, 3,1)
+    drawHat()
+    // Back of head (hair)
+    f(SKIN, 2,4, 8,5)
+    f('#c07830', 2,4, 8,3)    // warm brown hair
+    f('#a06020', 2,4, 8,1)    // hair darker top row
+    f(SHIRT, 3,10, 6,1)
+    f(OVR,   2,11, 8,5)
+    ctx.fillStyle = OVR
+    ctx.fillRect(sx+3*S, sy+Math.round(16+leg)*S, 2*S, 1*S)
+    ctx.fillRect(sx+7*S, sy+Math.round(16-leg)*S, 2*S, 1*S)
+    f(BOOT, 2,17, 4,1); f(BOOT, 6,17, 4,1)
+
   } else if (dir === 'right') {
-    f('#d4b660', 1,0, 10,1)
-    f('#c8a44a', 3,1, 6,3)
-    f('#7c2d12', 3,3, 6,1)
-    f('#fcd9b2', 2,4, 8,5)
-    f('#1f2937', 8,5, 2,2)         // single right eye (side profile)
-    f('#f0b98a', 1,5, 2,3)         // ear on left (back)
-    f('#f9a8d4', 9,7, 1,1)         // nose right side
-    f('#fef2d5', 9,9, 2,4)
-    f('#3b82f6', 2,9, 7,5)
-    ctx.fillStyle = '#2563eb'
-    ctx.fillRect(sx+3*S, sy+(13+leg)*S, 3*S, 4*S)
-    ctx.fillRect(sx+5*S, sy+(13-leg)*S, 3*S, 4*S)
-    f('#7c2d12', 3,17, 3,1); f('#7c2d12', 5,17, 3,1)
-  } else {
-    f('#d4b660', 1,0, 10,1)
-    f('#c8a44a', 3,1, 6,3)
-    f('#7c2d12', 3,3, 6,1)
-    f('#fcd9b2', 2,4, 8,5)
-    f('#1f2937', 2,5, 2,2)         // single left eye
-    f('#f0b98a', 9,5, 2,3)         // ear right side
-    f('#f9a8d4', 2,7, 1,1)
-    f('#fef2d5', 1,9, 2,4)
-    f('#3b82f6', 3,9, 7,5)
-    ctx.fillStyle = '#2563eb'
-    ctx.fillRect(sx+4*S, sy+(13+leg)*S, 3*S, 4*S)
-    ctx.fillRect(sx+6*S, sy+(13-leg)*S, 3*S, 4*S)
-    f('#7c2d12', 4,17, 3,1); f('#7c2d12', 6,17, 3,1)
+    drawHat()
+    f(SKIN, 2,4, 8,6)
+    f(SKIN, 1,5, 2,4)         // ear
+    f(SKIN2, 2,5, 1,2)        // ear shadow
+    // Single eye on right side
+    f(EYE,   8,5, 2,2); f(GLARE, 8,5, 1,1)
+    f(BLUSH, 8,7, 2,1)
+    f(SHIRT, 3,10, 6,1)
+    f(OVR,   2,11, 8,5)
+    f(OVR2,  4,11, 4,2)
+    ctx.fillStyle = OVR
+    ctx.fillRect(sx+3*S, sy+Math.round(16+leg)*S, 2*S, 1*S)
+    ctx.fillRect(sx+6*S, sy+Math.round(16-leg)*S, 2*S, 1*S)
+    f(BOOT, 2,17, 4,1); f(BOOT, 5,17, 4,1)
+
+  } else {   // left
+    drawHat()
+    f(SKIN, 2,4, 8,6)
+    f(SKIN, 9,5, 2,4)         // ear
+    f(SKIN2,10,5, 1,2)
+    f(EYE,   2,5, 2,2); f(GLARE, 3,5, 1,1)
+    f(BLUSH, 2,7, 2,1)
+    f(SHIRT, 3,10, 6,1)
+    f(OVR,   2,11, 8,5)
+    f(OVR2,  4,11, 4,2)
+    ctx.fillStyle = OVR
+    ctx.fillRect(sx+3*S, sy+Math.round(16+leg)*S, 2*S, 1*S)
+    ctx.fillRect(sx+6*S, sy+Math.round(16-leg)*S, 2*S, 1*S)
+    f(BOOT, 2,17, 4,1); f(BOOT, 6,17, 4,1)
   }
 }
 
-// ─── Cat drawing ──────────────────────────────────────────────────────────────
+// ─── Cat drawing (Stardew Valley-style: round head, pointed ears, expressive) ─
 const CAT_COLORS = {
-  alco: { body:'#9ca3af', belly:'#d1d5db', eye:'#fbbf24', nose:'#f9a8d4', stripe:'' },
-  link: { body:'#1f2937', belly:'#f1f5f9', eye:'#10b981', nose:'#f9a8d4', stripe:'#374151' },
+  alco: { body:'#a0aab8', belly:'#dde2e8', eye:'#f59e0b', nose:'#f9a8d4', ear:'#d4a0a8', stripe:'#8894a4' },
+  link: { body:'#2a3444', belly:'#e8eef5', eye:'#10b981', nose:'#f9a8d4', ear:'#6a405a', stripe:'#3d4e62' },
 }
 
 function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatId, dir: Dir, anim: CatAnim, frame: number, love: number) {
@@ -504,96 +633,138 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const W = 12*S, H = 12*S
   const sx = Math.round(wx - W/2)
   const sy = Math.round(wy - H)
-  const k = '#111827'; const w = 'rgba(255,255,255,0.55)'
+  const PUP = '#111827'           // pupil
+  const GLR = 'rgba(255,255,255,0.8)'  // eye glare
   const leg = anim === 'walk' ? Math.sin(frame*0.4)*1.5 : 0
 
   const f = (c: string, ax: number, ay: number, aw = 1, ah = 1) => {
     ctx.fillStyle = c; ctx.fillRect(sx+ax*S, sy+ay*S, aw*S, ah*S)
   }
 
+  // ── Sleep pose ────────────────────────────────────────────────────────────
   if (anim === 'sleep') {
-    // Curled-up blob
-    f(C.body, 1,3, 10,6)
-    f(C.belly, 3,4, 6,4)
-    if (id === 'link' && C.stripe) { f(C.stripe,1,4,2,2); f(C.stripe,9,4,2,2) }
-    // Tucked head
-    f(C.body, 2,1, 4,3)
-    f(C.nose, 4,3, 1,1)
-    // Tail curled over
-    f(C.body, 9,2, 2,4); f(C.body, 7,5, 3,2)
-    // ZZZ
-    ctx.fillStyle = '#93c5fd'; ctx.font = `${10}px sans-serif`
+    // Tail curled around body first (behind)
+    f(C.body, 8,2, 3,7)
+    f(C.body, 6,8, 3,1)
+    // Main body oval
+    f(C.body,  2,3, 8,7)
+    f(C.body,  1,4, 10,5)
+    f(C.belly, 3,5, 5,4)
+    // Head tucked (left side)
+    f(C.body, 1,2, 4,4)
+    f(C.body, 2,1, 3,2)
+    // Tiny ear nub
+    f(C.body, 2,0, 2,1)
+    f(C.ear,  2,0, 1,1)
+    // Closed eye (line)
+    ctx.fillStyle = PUP
+    ctx.fillRect(sx+2*S, sy+3*S, 2*S, S)
+    // Nose
+    f(C.nose, 3,4, 1,1)
+    // Link stripe
+    if (id === 'link') { f(C.stripe,2,5,3,2) }
+    // Zzz
+    ctx.fillStyle = '#93c5fd'; ctx.font = `${S*2}px sans-serif`
     ctx.textAlign = 'left'
-    ctx.globalAlpha = 0.7 + Math.sin(frame*0.05)*0.3
-    ctx.fillText('z', sx+W+2, sy+2)
-    if (frame % 90 > 45) ctx.fillText('Z', sx+W+6, sy-6)
+    ctx.globalAlpha = 0.65 + Math.sin(frame*0.04)*0.35
+    ctx.fillText('z', sx+W+S, sy+S)
+    if (frame % 80 > 40) ctx.fillText('Z', sx+W+S*2, sy-S)
     ctx.globalAlpha = 1
     return
   }
 
+  // ── Facing down (front) ───────────────────────────────────────────────────
   if (dir === 'down') {
-    // Ears
-    f(C.body, 1,0, 3,3); f(C.body, 8,0, 3,3)
-    f(C.nose,  2,1, 1,1); f(C.nose, 9,1, 1,1)  // inner ear
-    // Head
-    f(C.body, 1,3, 10,5)
-    // Eyes
-    f(C.eye, 2,4, 2,2); f(k, 3,4, 1,2); f(w, 2,4, 1,1)
-    f(C.eye, 8,4, 2,2); f(k, 9,4, 1,2); f(w, 8,4, 1,1)
+    // Pointed ears — triangular shape via stacked narrowing rows
+    f(C.body, 2,0, 1,1);  f(C.body, 9,0, 1,1)   // ear tips
+    f(C.ear,  2,0, 1,1);  f(C.ear,  9,0, 1,1)    // inner color at tip
+    f(C.body, 1,1, 3,2);  f(C.body, 8,1, 3,2)    // ear base
+    f(C.ear,  2,1, 1,1);  f(C.ear,  9,1, 1,1)    // inner ear
+    // Round head
+    f(C.body, 1,2, 10,6)
+    f(C.body, 0,3, 12,4)  // wider mid-section for roundness
+    // Muzzle (lighter oval) + nose
+    if (id === 'link') f(C.belly, 3,6, 6,2)
     f(C.nose, 5,6, 2,1)
-    if (id === 'link') { f(C.belly, 3,7, 6,1) }  // white muzzle
+    // Eyes — 2×2 iris, 1×1 pupil, 1×1 glare
+    f(C.eye, 2,3, 2,2); f(PUP, 3,3, 1,2); f(GLR, 2,3, 1,1)
+    f(C.eye, 8,3, 2,2); f(PUP, 8,3, 1,2); f(GLR, 8,3, 1,1)
     // Body
-    f(C.body, 2,8, 8,4)
-    f(C.belly, 3,9, 6,3)
-    if (id === 'link' && C.stripe) { f(C.stripe,2,9,2,2); f(C.stripe,8,9,2,2) }
-    // Tail
-    f(C.body, 10,7, 2,5); f(C.body, 8,11, 3,1)
-    if (id === 'link') f('#f1f5f9', 8,11, 3,1)
+    f(C.body, 2,8, 8,3)
+    f(C.belly, 3,8, 6,3)
+    if (id === 'link') { f(C.stripe,2,9,2,2); f(C.stripe,8,9,2,2) }
+    // Tail (curves to right)
+    f(C.body,10,7, 2,4); f(C.body, 9,10,2,1)
     // Paws
-    ctx.fillRect(sx+(2)*S, sy+(Math.round(12+leg))*S, 3*S, S)
-    ctx.fillRect(sx+(7)*S, sy+(Math.round(12-leg))*S, 3*S, S)
-    if (id === 'link') {
-      f(C.nose, 8,11, 2,1)  // toe beans right paw
-    }
+    ctx.fillStyle = C.body
+    ctx.fillRect(sx+2*S, sy+Math.round(11+leg)*S, 3*S, S)
+    ctx.fillRect(sx+7*S, sy+Math.round(11-leg)*S, 3*S, S)
+    // Link toe beans
+    if (id === 'link') { f(C.nose,2,11,1,1); f(C.nose,4,11,1,1); f(C.nose,7,11,1,1); f(C.nose,9,11,1,1) }
+
+  // ── Facing up (back) ──────────────────────────────────────────────────────
   } else if (dir === 'up') {
-    f(C.body, 2,0, 3,3); f(C.body, 7,0, 3,3)
-    f(C.body, 1,3, 10,5)
-    if (id === 'link' && C.stripe) { f(C.stripe,2,4,8,2) }
-    f(C.body, 2,8, 8,4)
-    // Tail visible from behind
-    f(C.body, 10,6, 2,6); f(C.body, 8,11, 3,1)
-    if (id === 'link') f('#f1f5f9', 8,11, 3,1)
-    ctx.fillRect(sx+(2)*S, sy+(Math.round(12+leg))*S, 3*S, S)
-    ctx.fillRect(sx+(7)*S, sy+(Math.round(12-leg))*S, 3*S, S)
+    f(C.body, 2,0, 1,1);  f(C.body, 9,0, 1,1)
+    f(C.ear,  2,0, 1,1);  f(C.ear,  9,0, 1,1)
+    f(C.body, 1,1, 3,2);  f(C.body, 8,1, 3,2)
+    f(C.body, 1,2, 10,6)
+    f(C.body, 0,3, 12,4)
+    if (id === 'link') f(C.stripe, 2,4, 8,2)
+    f(C.body, 2,8, 8,3)
+    f(C.belly, 3,9, 6,2)
+    // Tail visible from back
+    f(C.body,10,7, 2,5); f(C.body, 9,11,2,1)
+    ctx.fillStyle = C.body
+    ctx.fillRect(sx+2*S, sy+Math.round(11+leg)*S, 3*S, S)
+    ctx.fillRect(sx+7*S, sy+Math.round(11-leg)*S, 3*S, S)
+
+  // ── Facing right ──────────────────────────────────────────────────────────
   } else if (dir === 'right') {
-    f(C.body, 8,0, 3,3); f(C.nose, 9,1, 1,1)
-    f(C.body, 1,3, 10,5)
-    f(C.eye, 8,4, 2,2); f(k, 9,4, 1,2); f(w, 8,4, 1,1)
-    f(C.nose, 10,6, 1,1)
-    if (id === 'link') { f(C.belly, 4,4, 5,4) }
-    f(C.body, 1,8, 9,4); f(C.belly, 2,9, 6,3)
-    if (id === 'link' && C.stripe) { f(C.stripe,1,9,2,2); f(C.stripe,1,11,2,2) }
-    f(C.body, 0,7, 2,5); f(C.body, 0,5, 2,3)
-    ctx.fillRect(sx+(3)*S, sy+(Math.round(12+leg))*S, 3*S, S)
-    ctx.fillRect(sx+(6)*S, sy+(Math.round(12-leg))*S, 3*S, S)
+    // Ear (right side)
+    f(C.body, 9,0, 2,1);  f(C.ear, 10,0, 1,1)
+    f(C.body, 8,1, 3,2);  f(C.ear,  9,1, 1,1)
+    // Round head + muzzle poke
+    f(C.body, 1,2, 10,6)
+    f(C.body, 0,3, 12,4)
+    f(C.body,10,6, 2,1)   // muzzle side
+    // Eye (single, right side)
+    f(C.eye, 8,3, 2,2); f(PUP, 9,3, 1,2); f(GLR, 8,3, 1,1)
+    f(C.nose,10,6, 1,1)
+    if (id === 'link') f(C.belly, 3,4, 5,4)
+    // Body
+    f(C.body, 1,8, 9,3)
+    f(C.belly, 2,8, 7,3)
+    if (id === 'link') { f(C.stripe,1,9,2,2); f(C.stripe,1,11,2,2) }
+    // Tail (left, curling)
+    f(C.body, 0,7, 2,4); f(C.body, 1,11,2,1)
+    ctx.fillStyle = C.body
+    ctx.fillRect(sx+3*S, sy+Math.round(11+leg)*S, 3*S, S)
+    ctx.fillRect(sx+6*S, sy+Math.round(11-leg)*S, 3*S, S)
+
+  // ── Facing left ───────────────────────────────────────────────────────────
   } else {
-    f(C.body, 1,0, 3,3); f(C.nose, 2,1, 1,1)
-    f(C.body, 1,3, 10,5)
-    f(C.eye, 2,4, 2,2); f(k, 2,4, 1,2); f(w, 2,4, 1,1)
+    f(C.body, 1,0, 2,1);  f(C.ear,  1,0, 1,1)
+    f(C.body, 1,1, 3,2);  f(C.ear,  2,1, 1,1)
+    f(C.body, 1,2, 10,6)
+    f(C.body, 0,3, 12,4)
+    f(C.body, 0,6, 2,1)   // muzzle side
+    f(C.eye, 2,3, 2,2); f(PUP, 2,3, 1,2); f(GLR, 3,3, 1,1)
     f(C.nose, 1,6, 1,1)
-    if (id === 'link') { f(C.belly, 3,4, 5,4) }
-    f(C.body, 2,8, 9,4); f(C.belly, 4,9, 5,3)
-    if (id === 'link' && C.stripe) { f(C.stripe,9,9,2,2); f(C.stripe,9,11,2,2) }
-    f(C.body, 10,7, 2,5); f(C.body, 10,5, 2,3)
-    ctx.fillRect(sx+(3)*S, sy+(Math.round(12+leg))*S, 3*S, S)
-    ctx.fillRect(sx+(6)*S, sy+(Math.round(12-leg))*S, 3*S, S)
+    if (id === 'link') f(C.belly, 4,4, 5,4)
+    f(C.body, 2,8, 9,3)
+    f(C.belly, 3,8, 7,3)
+    if (id === 'link') { f(C.stripe,9,9,2,2); f(C.stripe,9,11,2,2) }
+    f(C.body,10,7, 2,4); f(C.body, 9,11,2,1)
+    ctx.fillStyle = C.body
+    ctx.fillRect(sx+3*S, sy+Math.round(11+leg)*S, 3*S, S)
+    ctx.fillRect(sx+6*S, sy+Math.round(11-leg)*S, 3*S, S)
   }
 
   // Love hearts above head
   if (love > 0) {
-    ctx.font = '10px serif'
+    ctx.font = `${S*1.2}px serif`; ctx.textAlign = 'center'
     const hearts = ['❤️','🧡','💛'].slice(0, love).join('')
-    ctx.fillText(hearts, sx + W/2, sy - 4)
+    ctx.fillText(hearts, sx + W/2, sy - S/2)
   }
 }
 
@@ -920,7 +1091,7 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
       // Sort entities + willow by Y for depth
       type Entity = { y: number; draw: () => void }
       const entities: Entity[] = []
-      const willowWorldY = (WILLOW_TY + 7) * TS   // bottom of willow for sort
+      const willowWorldY = (WILLOW_TY + 21) * TS   // tripled willow bottom for z-sort
       entities.push({
         y: willowWorldY,
         draw: () => drawWillow(ctx, Math.round(WILLOW_TX*TS - camX), Math.round(WILLOW_TY*TS - camY), gs.frame),
