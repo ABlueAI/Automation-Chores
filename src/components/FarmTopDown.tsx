@@ -692,37 +692,44 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const DH = 90  // display height in world pixels (45px on screen at ZOOM=0.5)
 
   // Draw one frame from a sprite sheet, centered at (wx, wy-feet)
-  function spr(name: string, totalFrames: number, fi: number, srcX = 0, srcY = 0, srcW?: number, srcH?: number) {
+  // Exact frame x-positions measured per sprite (64px stride, uneven content placement)
+  // sitting:    3 cats — x=11,163,315  w=114 h=181
+  // sleeping:   2 frames — x=46,110    w=32  h=65
+  // cleaning:   4 frames — x=19,83,147,211  w=30 h=57
+  // walk-north: 4 frames — x=28,92,156,220  w=30 h=54
+  // walk-south: 4 frames — x=19,83,147,211  w=30 h=88
+  // walk-east:  4 frames — x=22,86,150,214  w=44 h=61
+  // walk-west:  4 frames — x=33,97,161,225  w=44 h=69
+  const af4r = 3 - af4  // reversed frame order fixes moonwalking
+
+  function spr(name: string, srcX: number, srcW: number, srcH: number) {
     const s = _catSprites[name]?.canvas
     if (!s) return
-    const fw = srcW ?? Math.round(s.width / totalFrames)
-    const fh = srcH ?? s.height
     const dh = DH
-    const dw = Math.round(dh * fw / fh)
+    const dw = Math.round(dh * srcW / srcH)
     ctx.imageSmoothingEnabled = false
-    ctx.drawImage(s, srcX + fi * fw, srcY, fw, fh, Math.round(wx - dw/2), Math.round(wy - dh), dw, dh)
+    ctx.drawImage(s, srcX, 0, srcW, srcH, Math.round(wx - dw/2), Math.round(wy - dh), dw, dh)
   }
 
   if (anim === 'sleep') {
-    spr('sleeping', 2, af2)
+    spr('sleeping', [46, 110][af2], 32, 65)
     ctx.fillStyle = '#93c5fd'; ctx.font = `${S*2}px sans-serif`; ctx.textAlign = 'left'
     ctx.globalAlpha = 0.65 + Math.sin(frame * 0.04) * 0.35
     ctx.fillText('z', wx + 46, wy - DH + 14)
     if (frame % 80 > 40) ctx.fillText('Z', wx + 58, wy - DH - 6)
     ctx.globalAlpha = 1
   } else if (anim === 'clean') {
-    spr('cleaning', 4, af4)
+    spr('cleaning', [19, 83, 147, 211][af4], 30, 57)
   } else if (anim === 'sit' || anim === 'idle' || anim === 'drink' || anim === 'eat') {
-    const col = CAT_SIT_COL[id]
-    spr('sitting', 3, 0, col * 149, 0, 149, 181)
+    spr('sitting', [11, 163, 315][CAT_SIT_COL[id]], 114, 181)
   } else if (dir === 'up') {
-    spr('walk-north', 4, af4)
+    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54)
   } else if (dir === 'down') {
-    spr('walk-south', 4, af4)
+    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88)
   } else if (dir === 'right') {
-    spr('walk-east', 4, af4)
+    spr('walk-east', [22, 86, 150, 214][af4r], 44, 61)
   } else {
-    spr('walk-west', 4, af4)
+    spr('walk-west', [33, 97, 161, 225][af4r], 44, 69)
   }
 
   if (love > 0) {
