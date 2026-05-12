@@ -655,9 +655,25 @@ const _catSprites: Record<string, _SpriteEntry> = {}
       cx.drawImage(img, 0, 0)
       const px = cx.getImageData(0, 0, c.width, c.height)
       const d = px.data
-      // Remove white/near-white background pixels
-      for (let i = 0; i < d.length; i += 4) {
-        if (d[i] > 235 && d[i+1] > 235 && d[i+2] > 235) d[i+3] = 0
+      const W = c.width, H = c.height
+      // Flood-fill from all four corners — only erases background pixels
+      // connected to the edges, never touches white inside the sprite itself
+      const visited = new Uint8Array(W * H)
+      const queue: number[] = []
+      for (const idx of [0, W-1, (H-1)*W, (H-1)*W + W-1]) {
+        visited[idx] = 1; queue.push(idx)
+      }
+      while (queue.length) {
+        const idx = queue.pop()!
+        const p = idx * 4
+        if (d[p] > 200 && d[p+1] > 200 && d[p+2] > 200) {
+          d[p+3] = 0
+          const x = idx % W, y = (idx / W) | 0
+          if (x > 0   && !visited[idx-1]) { visited[idx-1] = 1; queue.push(idx-1) }
+          if (x < W-1 && !visited[idx+1]) { visited[idx+1] = 1; queue.push(idx+1) }
+          if (y > 0   && !visited[idx-W]) { visited[idx-W] = 1; queue.push(idx-W) }
+          if (y < H-1 && !visited[idx+W]) { visited[idx+W] = 1; queue.push(idx+W) }
+        }
       }
       cx.putImageData(px, 0, 0)
       entry.canvas = c
