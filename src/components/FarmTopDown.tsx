@@ -28,7 +28,7 @@ const SIGN_DEADLINE = new Date('2026-05-16T00:00:00').getTime()  // 6 days from 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Dir = 'down' | 'up' | 'left' | 'right'
-type CatAnim = 'idle' | 'walk' | 'sleep' | 'drink' | 'eat'
+type CatAnim = 'idle' | 'walk' | 'sleep' | 'drink' | 'eat' | 'sit' | 'clean'
 type CatId = 'alco' | 'link'
 
 interface Vec2 { x: number; y: number }
@@ -48,6 +48,7 @@ interface CatState {
   fedUntil: number      // epoch ms, stacking satisfaction
   chatTimer: number     // ms to show chat bubble
   asleep: boolean
+  pendingAnim: CatAnim | null  // queued anim to play after current one
 }
 
 interface GameState {
@@ -168,11 +169,12 @@ function initCat(id: CatId): CatState {
   return {
     id, pos: { x: (startX + 0.5)*TS, y: (BARN_BOT + 2)*TS },
     target: { x: (startX + 0.5)*TS, y: (BARN_BOT + 2)*TS },
-    dir: 'down', anim: Math.random() < 0.7 ? 'sleep' : 'idle',
+    dir: 'down', anim: Math.random() < 0.7 ? 'sleep' : 'sit',
     frame: 0, animTimer: 0,
     stateTimer: Math.random() < 0.7 ? 8000 : 2000 + Math.random()*3000,
     love: stored.love, followUntil: stored.followUntil,
     fedUntil: stored.fedUntil, chatTimer: 0, asleep: Math.random() < 0.7,
+    pendingAnim: null,
   }
 }
 
@@ -627,9 +629,9 @@ function drawFarmer(ctx: CanvasRenderingContext2D, wx: number, wy: number, dir: 
   }
 }
 
-// ─── Cat drawing (Stardew Valley-style: round head, pointed ears, expressive) ─
+// ─── Cat drawing (pixel art matching reference sprites) ───────────────────────
 const CAT_COLORS = {
-  alco: { body:'#a0aab8', belly:'#dde2e8', eye:'#f59e0b', nose:'#f9a8d4', ear:'#d4a0a8', stripe:'#8894a4' },
+  alco: { body:'#a0aab8', belly:'#dde2e8', eye:'#f59e0b', nose:'#f9a8d4', ear:'#c49098', stripe:'#8894a4' },
   link: { body:'#2a3444', belly:'#e8eef5', eye:'#10b981', nose:'#f9a8d4', ear:'#6a405a', stripe:'#3d4e62' },
 }
 
@@ -639,34 +641,36 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const sx = Math.round(wx - W/2)
   const sy = Math.round(wy - H)
   const PUP = '#111827'
-  const GLR = 'rgba(255,255,255,0.8)'
-  const leg = anim === 'walk' ? Math.sin(frame*0.4)*1.5 : 0
+  const GLR = 'rgba(255,255,255,0.9)'
+  const BLUSH = '#ffb3c6'
 
   const f = (c: string, ax: number, ay: number, aw = 1, ah = 1) => {
     ctx.fillStyle = c; ctx.fillRect(sx+ax*S, sy+ay*S, aw*S, ah*S)
   }
 
-  // ── Sleep pose ────────────────────────────────────────────────────────────
+  const af4 = Math.floor(frame / 8) % 4   // 4-frame cycle ~7.5 fps
+  const af2 = Math.floor(frame / 14) % 2  // 2-frame cycle (breathing)
+  const hearts = ['❤️','🧡','💛'].slice(0, love).join('')
+
+  // ── SLEEP — 2-frame breathing (matches cat sleeping.png) ──────────────────
   if (anim === 'sleep') {
-    // Tail curled around right side (behind body)
-    f(C.body, 8,1, 3,8)
-    f(C.body, 6,8, 3,1)
-    // Main body oval (curled up)
-    f(C.body,  2,2, 8,8)
-    f(C.body,  1,3, 10,6)
-    f(C.belly, 3,4, 5,4)
-    // Head tucked at top-left
-    f(C.body, 1,1, 5,3)
-    f(C.body, 2,0, 3,2)
-    // Ear nub
-    f(C.body, 2,0, 2,1); f(C.ear, 2,0, 1,1)
-    // Closed eye (horizontal line)
-    ctx.fillStyle = PUP
-    ctx.fillRect(sx+2*S, sy+2*S, 3*S, S)
-    // Nose
-    f(C.nose, 3,3, 1,1)
-    // Link stripe
-    if (id === 'link') { f(C.stripe,2,5,3,2) }
+    const b = af2
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)'
+    ctx.beginPath(); ctx.ellipse(sx+W/2, sy+11*S, 5*S, 1.5*S, 0, 0, Math.PI*2); ctx.fill()
+    // Curled body — breathes out on frame 1 (slightly wider)
+    f(C.body, 2-b, 3, 9+b*2, 6)
+    f(C.body, 1, 5, 10, 3)
+    f(C.belly, 3, 5, 5, 3)
+    // Tail curled to right
+    f(C.body, 9, 6, 3, 4); f(C.body, 8, 9, 3, 1)
+    // Head tucked top-left
+    f(C.body, 1, 2, 5, 4); f(C.body, 2, 1, 3, 3)
+    f(C.ear, 2, 1, 1, 1)
+    // Closed eye
+    f(PUP, 2, 3, 3, 1)
+    f(C.nose, 3, 4, 1, 1)
+    if (id === 'link') { f(C.stripe, 2, 6, 4, 2) }
     // Zzz
     ctx.fillStyle = '#93c5fd'; ctx.font = `${S*2}px sans-serif`
     ctx.textAlign = 'left'
@@ -674,142 +678,157 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     ctx.fillText('z', sx+W+S, sy+S)
     if (frame % 80 > 40) ctx.fillText('Z', sx+W+S*2, sy-S)
     ctx.globalAlpha = 1
+    if (love > 0) { ctx.font = `${S*1.2}px serif`; ctx.textAlign = 'center'; ctx.fillText(hearts, sx+W/2, sy-S/2) }
     return
   }
 
-  // ── Facing down (front, sitting) ──────────────────────────────────────────
+  // ── CLEAN — 4-frame grooming (matches cat self cleaning.png) ──────────────
+  if (anim === 'clean') {
+    // Ears
+    f(C.ear, 2, 0); f(C.ear, 9, 0)
+    f(C.body, 1, 0, 3, 2); f(C.body, 8, 0, 3, 2)
+    // Head
+    f(C.body, 1, 2, 10, 1); f(C.body, 0, 3, 12, 5)
+    // Nose
+    f(C.nose, 5, 6, 2, 1)
+    if (af4 === 0 || af4 === 3) {
+      // Normal eyes forward
+      f(C.eye, 2, 3, 2, 3); f(PUP, 3, 4, 1, 2); f(GLR, 2, 3, 1, 1)
+      f(C.eye, 8, 3, 2, 3); f(PUP, 8, 4, 1, 2); f(GLR, 8, 3, 1, 1)
+    } else if (af4 === 1) {
+      // Eyes squinting / looking down
+      f(C.eye, 2, 5, 2, 1); f(PUP, 3, 5, 1, 1)
+      f(C.eye, 8, 5, 2, 1); f(PUP, 8, 5, 1, 1)
+    } else {
+      // Frame 2: paw up to cheek
+      f(C.eye, 2, 3, 2, 3); f(PUP, 3, 4, 1, 2); f(GLR, 2, 3, 1, 1)
+      f(C.eye, 8, 3, 2, 3); f(PUP, 8, 4, 1, 2); f(GLR, 8, 3, 1, 1)
+      // Raised paw near face
+      f(C.body, 3, 6, 3, 3)
+    }
+    // Body + belly
+    f(C.body, 1, 8, 10, 3); f(C.belly, 2, 8, 8, 3)
+    if (id === 'link') { f(C.stripe, 2, 9, 2, 2); f(C.stripe, 8, 9, 2, 2) }
+    // Tail
+    f(C.body, 10, 8, 2, 3); f(C.body, 9, 10, 2, 1)
+    // Paws (left paw absent in frame 2 — it's raised)
+    if (af4 !== 2) { f(C.body, 1, 11, 3, 1) }
+    f(C.body, 8, 11, 3, 1)
+    if (love > 0) { ctx.font = `${S*1.2}px serif`; ctx.textAlign = 'center'; ctx.fillText(hearts, sx+W/2, sy-S/2) }
+    return
+  }
+
+  // ── SIT — front-facing sitting pose (matches Sitting Cats.png) ────────────
+  if (anim === 'sit' || anim === 'idle') {
+    // Ears
+    f(C.ear, 2, 0); f(C.ear, 9, 0)
+    f(C.body, 1, 0, 3, 2); f(C.body, 8, 0, 3, 2)
+    // Round head
+    f(C.body, 1, 2, 10, 1); f(C.body, 0, 3, 12, 5)
+    // Large round eyes
+    f(C.eye, 2, 3, 2, 3); f(PUP, 3, 4, 1, 2); f(GLR, 2, 3, 1, 1)
+    f(C.eye, 8, 3, 2, 3); f(PUP, 8, 4, 1, 2); f(GLR, 8, 3, 1, 1)
+    // Rosy cheeks
+    f(BLUSH, 1, 5, 2, 1); f(BLUSH, 9, 5, 2, 1)
+    // Nose
+    f(C.nose, 5, 6, 2, 1)
+    // Body + belly
+    f(C.body, 1, 8, 10, 3); f(C.belly, 2, 8, 8, 3)
+    if (id === 'link') { f(C.stripe, 2, 9, 2, 2); f(C.stripe, 8, 9, 2, 2) }
+    // Tail curled to right
+    f(C.body, 10, 8, 2, 3); f(C.body, 9, 10, 2, 1)
+    // Sitting paws (tucked in)
+    f(C.body, 1, 11, 3, 1); f(C.body, 8, 11, 3, 1)
+    if (love > 0) { ctx.font = `${S*1.2}px serif`; ctx.textAlign = 'center'; ctx.fillText(hearts, sx+W/2, sy-S/2) }
+    return
+  }
+
+  // ── WALK / DIRECTIONAL ────────────────────────────────────────────────────
+  // Alternating leg pairs: pair A down on even frames, pair B down on odd frames
+  const lA = af4 % 2 === 0 ? 1 : 0
+  const lB = af4 % 2 === 0 ? 0 : 1
+
+  // SOUTH — walking toward viewer (matches cat walking front.png)
   if (dir === 'down') {
-    // Ear tips pointing UP
-    f(C.body, 2,0, 1,1); f(C.ear, 2,0, 1,1)
-    f(C.body, 9,0, 1,1); f(C.ear, 9,0, 1,1)
-    // Ear bases
-    f(C.body, 1,1, 3,2); f(C.ear, 2,1, 1,1)
-    f(C.body, 8,1, 3,2); f(C.ear, 9,1, 1,1)
-    // Round head + wider mid
-    f(C.body, 1,2, 10,6)
-    f(C.body, 0,3, 12,4)
-    // Muzzle patch + nose
-    if (id === 'link') f(C.belly, 3,6, 6,2)
-    f(C.nose, 5,6, 2,1)
-    // Eyes (2×2 iris, pupil, glare)
-    f(C.eye, 2,3, 2,2); f(PUP, 3,3, 1,2); f(GLR, 2,3, 1,1)
-    f(C.eye, 8,3, 2,2); f(PUP, 8,3, 1,2); f(GLR, 8,3, 1,1)
-    // Body
-    f(C.body, 2,8, 8,3)
-    f(C.belly, 3,8, 6,3)
-    if (id === 'link') { f(C.stripe,2,9,2,2); f(C.stripe,8,9,2,2) }
-    // Tail (curls to right, visible from front)
-    f(C.body,10,7, 2,4); f(C.body, 9,10,2,1)
-    // Front paws
+    f(C.ear, 2, 0); f(C.ear, 9, 0)
+    f(C.body, 1, 0, 3, 2); f(C.body, 8, 0, 3, 2)
+    f(C.body, 1, 2, 10, 1); f(C.body, 0, 3, 12, 5)
+    f(C.eye, 2, 3, 2, 3); f(PUP, 3, 4, 1, 2); f(GLR, 2, 3, 1, 1)
+    f(C.eye, 8, 3, 2, 3); f(PUP, 8, 4, 1, 2); f(GLR, 8, 3, 1, 1)
+    f(C.nose, 5, 6, 2, 1)
+    f(C.body, 1, 8, 10, 3); f(C.belly, 2, 8, 8, 3)
+    if (id === 'link') { f(C.stripe, 2, 9, 2, 2); f(C.stripe, 8, 9, 2, 2) }
+    f(C.body, 10, 8, 2, 3); f(C.body, 9, 10, 2, 1)
     ctx.fillStyle = C.body
-    ctx.fillRect(sx+2*S, sy+Math.round(11+leg)*S, 3*S, S)
-    ctx.fillRect(sx+7*S, sy+Math.round(11-leg)*S, 3*S, S)
-    if (id === 'link') { f(C.nose,2,11,1,1); f(C.nose,4,11,1,1); f(C.nose,7,11,1,1); f(C.nose,9,11,1,1) }
+    ctx.fillRect(sx+1*S, sy+(11+lA)*S, 3*S, S)
+    ctx.fillRect(sx+8*S, sy+(11+lB)*S, 3*S, S)
 
-  // ── Facing up (back) — tail straight up from center ───────────────────────
+  // NORTH — walking away (matches cat walking back.png) — tail straight up
   } else if (dir === 'up') {
-    // Ears visible from back
-    f(C.body, 2,0, 1,1); f(C.ear, 2,0, 1,1)
-    f(C.body, 9,0, 1,1); f(C.ear, 9,0, 1,1)
-    f(C.body, 1,1, 3,2); f(C.ear, 2,1, 1,1)
-    f(C.body, 8,1, 3,2); f(C.ear, 9,1, 1,1)
-    // Back of head + body
-    f(C.body, 1,2, 10,6)
-    f(C.body, 0,3, 12,4)
-    if (id === 'link') f(C.stripe, 2,4, 8,2)
-    f(C.body, 2,8, 8,3)
-    f(C.belly, 3,9, 6,2)
-    // Tail STRAIGHT UP from center-back (Stardew Valley signature)
-    f(C.body, 4,0, 4,1)   // tail base (wide)
-    f(C.body, 5,0, 2,7)   // tail shaft rising from back
-    // Paws
+    // Tail rises above the head
+    f(C.body, 5, -5, 2, 6)
+    // Ears from behind
+    f(C.ear, 2, 0); f(C.ear, 9, 0)
+    f(C.body, 1, 0, 3, 2); f(C.body, 8, 0, 3, 2)
+    // Back of head
+    f(C.body, 1, 2, 10, 2); f(C.body, 0, 3, 12, 4)
+    if (id === 'link') f(C.stripe, 2, 4, 8, 2)
+    // Body
+    f(C.body, 1, 7, 10, 4)
+    f(C.belly, 3, 8, 6, 2)
+    // Legs
     ctx.fillStyle = C.body
-    ctx.fillRect(sx+2*S, sy+Math.round(11+leg)*S, 3*S, S)
-    ctx.fillRect(sx+7*S, sy+Math.round(11-leg)*S, 3*S, S)
+    ctx.fillRect(sx+2*S, sy+(11+lA)*S, 3*S, S)
+    ctx.fillRect(sx+7*S, sy+(11+lB)*S, 3*S, S)
 
-  // ── Facing right — head at right, tail at LEFT going UP ───────────────────
+  // EAST — side view walking right (matches cat walking right.png)
   } else if (dir === 'right') {
-    // Tail at LEFT end, curves UP (Stardew Valley signature)
-    f(C.body, 1,0, 2,2)   // tail tip (slightly offset at top)
-    f(C.body, 0,2, 2,4)   // tail shaft rising up
-    f(C.body, 1,5, 2,1)   // tail base connecting to body
-
-    // Ear at RIGHT/front, pointing UP
-    f(C.body, 9,0, 2,1);  f(C.ear, 9,0, 1,1)
-    f(C.body, 8,1, 3,2);  f(C.ear, 9,1, 1,1)
-
-    // Head (right side, cols 8-11)
-    f(C.body, 8,2, 4,5)
-
-    // Body (horizontal, cols 1-8)
-    f(C.body, 1,2, 7,4)
-    f(C.body, 0,3, 12,2)  // wider mid-row for roundness
-
-    // Belly (lighter underside)
-    f(C.belly, 2,3, 6,2)
-    if (id === 'link') f(C.belly, 9,4, 2,1)
-
-    // Eye (single, right side of head)
-    f(C.eye, 9,3, 2,2); f(PUP, 9,3, 1,2); f(GLR, 9,3, 1,1)
-
-    // Nose/muzzle (front tip of head)
-    f(C.body, 11,4, 1,1)
-    f(C.nose, 11,4, 1,1)
-
-    // Link stripe
-    if (id === 'link') { f(C.stripe, 2,3, 2,2); f(C.stripe, 4,2, 2,1) }
-
-    // 4 legs (alternating walk animation)
+    // Tail at left going up
+    f(C.body, 0, -3, 2, 5); f(C.body, 0, 2, 2, 4); f(C.body, 1, 5, 2, 1)
+    // Ear at front-right
+    f(C.ear, 9, 0); f(C.body, 8, 0, 3, 2)
+    // Head (right side)
+    f(C.body, 7, 1, 5, 5); f(C.body, 0, 3, 12, 3)
+    // Single eye
+    f(C.eye, 9, 3, 2, 2); f(PUP, 9, 3, 1, 2); f(GLR, 9, 3, 1, 1)
+    // Nose at tip
+    f(C.nose, 11, 4, 1, 1)
+    // Body + belly
+    f(C.body, 1, 5, 9, 3); f(C.belly, 2, 5, 7, 2)
+    if (id === 'link') { f(C.stripe, 3, 5, 2, 2); f(C.stripe, 5, 4, 2, 1) }
+    // 4-leg cycle
     ctx.fillStyle = C.body
-    ctx.fillRect(sx+2*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
-    ctx.fillRect(sx+4*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
-    ctx.fillRect(sx+6*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
-    ctx.fillRect(sx+8*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+2*S, sy+(8+lA)*S, 2*S, 2*S)
+    ctx.fillRect(sx+4*S, sy+(8+lB)*S, 2*S, 2*S)
+    ctx.fillRect(sx+6*S, sy+(8+lA)*S, 2*S, 2*S)
+    ctx.fillRect(sx+8*S, sy+(8+lB)*S, 2*S, 2*S)
 
-  // ── Facing left — head at left, tail at RIGHT going UP ────────────────────
+  // WEST — side view walking left (matches cat walking left.png)
   } else {
-    // Tail at RIGHT end, curves UP
-    f(C.body, 9,0, 2,2)   // tail tip
-    f(C.body,10,2, 2,4)   // tail shaft
-    f(C.body, 9,5, 2,1)   // tail base
-
-    // Ear at LEFT/front, pointing UP
-    f(C.body, 1,0, 2,1);  f(C.ear, 1,0, 1,1)
-    f(C.body, 1,1, 3,2);  f(C.ear, 2,1, 1,1)
-
-    // Head (left side, cols 0-3)
-    f(C.body, 0,2, 4,5)
-
-    // Body (horizontal, cols 3-10)
-    f(C.body, 4,2, 7,4)
-    f(C.body, 0,3, 12,2)
-
-    // Belly
-    f(C.belly, 4,3, 6,2)
-    if (id === 'link') f(C.belly, 1,4, 2,1)
-
-    // Eye (single, left side of head)
-    f(C.eye, 1,3, 2,2); f(PUP, 1,3, 1,2); f(GLR, 2,3, 1,1)
-
-    // Nose/muzzle (front tip of head)
-    f(C.body, 0,4, 1,1)
-    f(C.nose, 0,4, 1,1)
-
-    // Link stripe
-    if (id === 'link') { f(C.stripe, 8,3, 2,2); f(C.stripe, 6,2, 2,1) }
-
-    // 4 legs
+    // Tail at right going up
+    f(C.body, 10, -3, 2, 5); f(C.body, 10, 2, 2, 4); f(C.body, 9, 5, 2, 1)
+    // Ear at front-left
+    f(C.ear, 2, 0); f(C.body, 1, 0, 3, 2)
+    // Head (left side)
+    f(C.body, 0, 1, 5, 5); f(C.body, 0, 3, 12, 3)
+    // Single eye
+    f(C.eye, 1, 3, 2, 2); f(PUP, 1, 3, 1, 2); f(GLR, 2, 3, 1, 1)
+    // Nose at tip
+    f(C.nose, 0, 4, 1, 1)
+    // Body + belly
+    f(C.body, 2, 5, 9, 3); f(C.belly, 3, 5, 7, 2)
+    if (id === 'link') { f(C.stripe, 7, 5, 2, 2); f(C.stripe, 5, 4, 2, 1) }
+    // 4-leg cycle (mirrored)
     ctx.fillStyle = C.body
-    ctx.fillRect(sx+2*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
-    ctx.fillRect(sx+4*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
-    ctx.fillRect(sx+6*S, sy+(6+Math.round(leg))*S, 2*S, 2*S)
-    ctx.fillRect(sx+8*S, sy+(6-Math.round(leg))*S, 2*S, 2*S)
+    ctx.fillRect(sx+2*S, sy+(8+lB)*S, 2*S, 2*S)
+    ctx.fillRect(sx+4*S, sy+(8+lA)*S, 2*S, 2*S)
+    ctx.fillRect(sx+6*S, sy+(8+lB)*S, 2*S, 2*S)
+    ctx.fillRect(sx+8*S, sy+(8+lA)*S, 2*S, 2*S)
   }
 
   // Love hearts above head
   if (love > 0) {
     ctx.font = `${S*1.2}px serif`; ctx.textAlign = 'center'
-    const hearts = ['❤️','🧡','💛'].slice(0, love).join('')
     ctx.fillText(hearts, sx + W/2, sy - S/2)
   }
 }
@@ -917,25 +936,36 @@ function updateCat(cat: CatState, map: Uint8Array, farmer: FarmerState, dt: numb
     else cat.dir = dy > 0 ? 'down' : 'up'
   } else {
     cat.pos.x = tx; cat.pos.y = ty
-    if (cat.anim === 'walk') cat.anim = 'idle'
+    if (cat.anim === 'walk') cat.anim = 'sit'
   }
 
   // Change AI state when timer expires
   if (cat.stateTimer <= 0) {
+    // Pending anim (e.g. clean→sleep or wake→clean)
+    if (cat.pendingAnim) {
+      const next = cat.pendingAnim
+      cat.pendingAnim = null
+      if (next === 'sleep') {
+        cat.asleep = true; cat.anim = 'sleep'
+        cat.stateTimer = 8000 + Math.random()*12000
+      } else {
+        cat.anim = next; cat.dir = 'down'
+        cat.stateTimer = 2500 + Math.random()*1000
+      }
+      return
+    }
+
     if (following) {
-      // Follow farmer
-      cat.asleep = false
-      cat.anim = 'walk'
-      const farmerPos = farmer.pos
+      cat.asleep = false; cat.anim = 'walk'
       const angle = Math.random() * Math.PI * 2
-      cat.target = { x: farmerPos.x + Math.cos(angle)*40, y: farmerPos.y + Math.sin(angle)*40 }
+      cat.target = { x: farmer.pos.x + Math.cos(angle)*40, y: farmer.pos.y + Math.sin(angle)*40 }
       cat.stateTimer = 800 + Math.random()*600
     } else if (cat.asleep) {
-      // Chance to wake up
       if (Math.random() < 0.1) {
-        cat.asleep = false
-        cat.anim = 'idle'
-        cat.stateTimer = 3000 + Math.random()*5000
+        // Wake up — play clean first, then sit
+        cat.asleep = false; cat.anim = 'clean'; cat.dir = 'down'
+        cat.stateTimer = 2800
+        cat.pendingAnim = 'sit'
       } else {
         cat.anim = 'sleep'
         cat.stateTimer = 4000 + Math.random()*6000
@@ -943,28 +973,33 @@ function updateCat(cat: CatState, map: Uint8Array, farmer: FarmerState, dt: numb
     } else {
       const roll = Math.random()
       if (roll < 0.4) {
-        // Wander to a random barn-perimeter tile
+        // Wander (40%)
         const wanderTo = CAT_WANDER_TILES[Math.floor(Math.random()*CAT_WANDER_TILES.length)]
         cat.target = { x: (wanderTo[0]+0.5)*TS, y: (wanderTo[1]+0.5)*TS }
         cat.anim = 'walk'
         cat.stateTimer = 2000 + Math.random()*3000
-      } else if (roll < 0.7) {
-        // Go sleep
-        cat.asleep = true
-        cat.anim = 'sleep'
-        cat.stateTimer = 8000 + Math.random()*12000
-      } else if (roll < 0.85 && WATER_TY) {
-        // Go to water bowl
+      } else if (roll < 0.55) {
+        // Go to sleep — play clean first (15%)
+        cat.anim = 'clean'; cat.dir = 'down'
+        cat.stateTimer = 2800
+        cat.pendingAnim = 'sleep'
+      } else if (roll < 0.6) {
+        // Go to water bowl (5%)
         cat.target = { x: (WATER_TX+0.5)*TS, y: (WATER_TY+0.5)*TS }
         cat.anim = 'walk'
         cat.stateTimer = 3000 + Math.random()*2000
+      } else if (roll < 0.9) {
+        // Sit facing forward (30%)
+        cat.anim = 'sit'; cat.dir = 'down'
+        cat.stateTimer = 3000 + Math.random()*4000
       } else {
-        cat.anim = 'idle'
-        cat.stateTimer = 2000 + Math.random()*3000
+        // Self-clean (10%)
+        cat.anim = 'clean'; cat.dir = 'down'
+        cat.stateTimer = 3000 + Math.random()*2000
       }
     }
   }
-  void map  // suppress unused warning
+  void map
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
