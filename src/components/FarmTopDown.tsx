@@ -689,8 +689,9 @@ const _catSprites: Record<string, _SpriteEntry> = {}
           else                H = 60 * ((r - g) / delta + 4)
           if (H < 0) H += 360
         }
-        if (Sat > 0.25 && (H >= 310 || H <= 30)) continue  // pink — keep as-is
+        if (Sat > 0.25 && (H >= 330 || H <= 15)) continue  // pink — keep as-is (excludes orange hue 25-35°)
         if (L > 0.68) { d[i] = 245; d[i+1] = 245; d[i+2] = 245 }  // light → white
+        else if (Sat < 0.10 && L > 0.38) { d[i] = 160; d[i+1] = 160; d[i+2] = 160 }  // gray shadow → mid-gray
         else          { d[i] = 20;  d[i+1] = 20;  d[i+2] = 20  }  // else → black
       }
       cx.putImageData(px, 0, 0)
@@ -744,23 +745,13 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     ctx.fillRect(wx - 10, wy - 63, 2, 2)
     ctx.fillRect(wx + 8,  wy - 63, 2, 2)
   } else if (dir === 'up') {
-    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54, 1.5)
+    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54)
   } else if (dir === 'down') {
-    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88)
-    ctx.fillStyle = '#10b981'
-    ctx.fillRect(wx - 5, wy - 78, 2, 2)
-    ctx.fillRect(wx + 4, wy - 78, 2, 2)
+    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88, 1.5)
   } else if (dir === 'right') {
     spr('walk-east', [22, 86, 150, 214][af4r], 44, 61)
-    ctx.fillStyle = '#10b981'
-    ctx.fillRect(wx + 23, wy - 60, 2, 2)
   } else {
     spr('walk-west', [33, 97, 161, 225][af4r], 44, 69)
-    ctx.fillStyle = '#10b981'
-    ctx.fillRect(wx - 21, wy - 60, 2, 2)
-    ctx.fillStyle = '#f9a8d4'
-    ctx.fillRect(wx - 20, wy - 10, 2, 2)
-    ctx.fillRect(wx - 14, wy - 7,  2, 2)
   }
 
   if (love > 0) {
