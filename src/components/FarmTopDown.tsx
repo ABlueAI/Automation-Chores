@@ -675,17 +675,24 @@ const _catSprites: Record<string, _SpriteEntry> = {}
           if (y < H-1 && !visited[idx+W]) { visited[idx+W] = 1; queue.push(idx+W) }
         }
       }
-      // Remap to black-and-white; preserve cool-pink pixels (nose/pads)
+      // Remap to black-and-white; preserve pink (nose, toe beans)
       for (let i = 0; i < d.length; i += 4) {
         if (d[i+3] < 10) continue
-        const rv = d[i], gv = d[i+1], bv = d[i+2]
-        // Cool pink/rose: high red AND blue > green (catches nose/pads; excludes orange which has blue << green)
-        if (rv > 180 && bv > 80 && bv > gv) continue
-        const lum = (0.299*rv + 0.587*gv + 0.114*bv) | 0
-        if (lum > 175) { d[i]=245; d[i+1]=245; d[i+2]=245 }       // light → white
-        else if ((Math.max(rv,gv,bv) - Math.min(rv,gv,bv)) < 25 && lum > 70) {
-          d[i]=155; d[i+1]=155; d[i+2]=155                          // neutral gray → shadow gray
-        } else { d[i]=20; d[i+1]=20; d[i+2]=20 }                   // else → black
+        const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255
+        const max = Math.max(r,g,b), min = Math.min(r,g,b), delta = max - min
+        const L = (max + min) / 2
+        let H = 0, Sat = 0
+        if (delta > 0) {
+          Sat = delta / (1 - Math.abs(2*L - 1))
+          if (max === r)      H = 60 * (((g - b) / delta) % 6)
+          else if (max === g) H = 60 * ((b - r) / delta + 2)
+          else                H = 60 * ((r - g) / delta + 4)
+          if (H < 0) H += 360
+        }
+        if (Sat > 0.25 && H >= 330) continue  // pink — keep as-is (cool rose 330-360°; orange/red-orange excluded)
+        if (L > 0.68) { d[i] = 245; d[i+1] = 245; d[i+2] = 245 }  // light → white
+        else if (Sat < 0.10 && L > 0.38) { d[i] = 160; d[i+1] = 160; d[i+2] = 160 }  // gray shadow → mid-gray
+        else          { d[i] = 20;  d[i+1] = 20;  d[i+2] = 20  }  // else → black
       }
       cx.putImageData(px, 0, 0)
       entry.canvas = c
