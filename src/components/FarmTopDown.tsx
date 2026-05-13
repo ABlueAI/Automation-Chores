@@ -698,27 +698,25 @@ const _catSprites: Record<string, _SpriteEntry> = {}
         else if (sat < 0.10 && L > 0.38) { d[i]=160; d[i+1]=160; d[i+2]=160 }   // neutral gray → shadow
         else { d[i]=20; d[i+1]=20; d[i+2]=20 }                                    // else → black
       }
-      cx.putImageData(px, 0, 0)
-
-      // For the sitting sprite, paint a white face region on each cat column.
-      // source-atop compositing ensures white only lands on non-transparent cat pixels.
-      // Top edge uses a concave curve (dips at center) → black fur bleeds down as a V between the eyes.
+      // White face for sitting sprite: direct pixel pass before putImageData.
+      // Top boundary is a parabola that dips down at center (V of black between eyes).
+      // curveY = 55 + 25*(1-t²) → 55 at edges, 80 at center.
       if (name === 'sitting') {
-        cx.save()
-        cx.globalCompositeOperation = 'source-atop'
-        cx.fillStyle = '#f0f0f0'
-        for (const fcx of [68, 220, 372]) {  // center x of each cat column (x=11,163,315 + half-width 57)
-          cx.beginPath()
-          cx.moveTo(fcx - 28, 55)
-          cx.quadraticCurveTo(fcx, 80, fcx + 28, 55)  // V of black bleeds down between eyes
-          cx.lineTo(fcx + 26, 105)
-          cx.lineTo(fcx - 26, 105)
-          cx.closePath()
-          cx.fill()
+        for (const fcx of [68, 220, 372]) {
+          for (let sy = 55; sy < 105; sy++) {
+            for (let sx = fcx - 27; sx <= fcx + 27; sx++) {
+              if (sx < 0 || sx >= W) continue
+              const t = (sx - fcx) / 27
+              if (sy < 55 + 25 * (1 - t * t)) continue  // above the curve → stays black
+              const idx = (sy * W + sx) * 4
+              if (d[idx + 3] < 10) continue  // transparent → skip
+              d[idx] = 245; d[idx + 1] = 245; d[idx + 2] = 245
+            }
+          }
         }
-        cx.restore()
       }
 
+      cx.putImageData(px, 0, 0)
       entry.canvas = c
     }
     img.src = base + 'cats/' + name + '.png'
