@@ -747,14 +747,17 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     spr('sitting', [11, 163, 315][CAT_SIT_COL[id]], 114, 181)
     for (const ex of [wx - 10, wx + 8]) {
       const ey = wy - 63
-      ctx.fillStyle = '#ffffff'; ctx.fillRect(ex - 1, ey - 1, 5, 5)   // sclera
-      ctx.fillStyle = '#10b981'; ctx.fillRect(ex,     ey,     3, 3)   // iris
-      ctx.fillStyle = '#111827'; ctx.fillRect(ex + 1, ey + 1, 1, 1)   // pupil
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath(); ctx.ellipse(ex, ey, 4, 2.5, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#10b981'
+      ctx.beginPath(); ctx.ellipse(ex, ey, 2.5, 1.5, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#111827'
+      ctx.fillRect(ex - 1, ey - 2, 2, 4)   // vertical slit pupil
     }
   } else if (dir === 'up') {
     spr('walk-north', [28, 92, 156, 220][af4r], 30, 54, 1.5)
   } else if (dir === 'down') {
-    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88, 1.5)
+    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88, 2.0)
   } else if (dir === 'right') {
     spr('walk-east', [22, 86, 150, 214][af4r], 44, 61, 1.5)
   } else {
