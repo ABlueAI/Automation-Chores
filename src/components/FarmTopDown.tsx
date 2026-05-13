@@ -675,24 +675,28 @@ const _catSprites: Record<string, _SpriteEntry> = {}
           if (y < H-1 && !visited[idx+W]) { visited[idx+W] = 1; queue.push(idx+W) }
         }
       }
-      // Remap to black-and-white; preserve pink (nose, toe beans)
+      // Remap to black-and-white; preserve cool-pink pixels (nose)
       for (let i = 0; i < d.length; i += 4) {
         if (d[i+3] < 10) continue
+        // Warm orange/red-orange: R and G both far exceed B — force to black immediately
+        if (d[i] > d[i+2] * 3 && d[i+1] > d[i+2] * 2 && d[i+2] < 100) {
+          d[i]=20; d[i+1]=20; d[i+2]=20; continue
+        }
         const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255
         const max = Math.max(r,g,b), min = Math.min(r,g,b), delta = max - min
         const L = (max + min) / 2
-        let H = 0, Sat = 0
+        let hue = 0, sat = 0
         if (delta > 0) {
-          Sat = delta / (1 - Math.abs(2*L - 1))
-          if (max === r)      H = 60 * (((g - b) / delta) % 6)
-          else if (max === g) H = 60 * ((b - r) / delta + 2)
-          else                H = 60 * ((r - g) / delta + 4)
-          if (H < 0) H += 360
+          sat = delta / (1 - Math.abs(2*L - 1))
+          if (max === r)      hue = 60 * (((g - b) / delta) % 6)
+          else if (max === g) hue = 60 * ((b - r) / delta + 2)
+          else                hue = 60 * ((r - g) / delta + 4)
+          if (hue < 0) hue += 360
         }
-        if (Sat > 0.25 && H >= 330) continue  // pink — keep as-is (cool rose 330-360°; orange/red-orange excluded)
-        if (L > 0.68) { d[i] = 245; d[i+1] = 245; d[i+2] = 245 }  // light → white
-        else if (Sat < 0.10 && L > 0.38) { d[i] = 160; d[i+1] = 160; d[i+2] = 160 }  // gray shadow → mid-gray
-        else          { d[i] = 20;  d[i+1] = 20;  d[i+2] = 20  }  // else → black
+        if (sat > 0.25 && hue >= 330) continue                                    // cool pink — keep
+        if (L > 0.68) { d[i]=245; d[i+1]=245; d[i+2]=245 }                       // light → white
+        else if (sat < 0.10 && L > 0.38) { d[i]=160; d[i+1]=160; d[i+2]=160 }   // neutral gray → shadow
+        else { d[i]=20; d[i+1]=20; d[i+2]=20 }                                    // else → black
       }
       cx.putImageData(px, 0, 0)
       entry.canvas = c
