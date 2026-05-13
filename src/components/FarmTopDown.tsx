@@ -725,6 +725,9 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   // walk-west:  4 frames — x=33,97,161,225  w=44 h=69
   const af4r = 3 - af4  // reversed frame order fixes moonwalking
 
+  // Walk scale knobs — adjust all four in one place
+  const W_N = 1.0, W_S = 2.0, W_E = 1.5, W_W = 1.5
+
   function spr(name: string, srcX: number, srcW: number, srcH: number, scale = 1.0) {
     const s = _catSprites[name]?.canvas
     if (!s) return
@@ -747,21 +750,29 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     spr('sitting', [11, 163, 315][CAT_SIT_COL[id]], 114, 181)
     for (const ex of [wx - 10, wx + 8]) {
       const ey = wy - 55
-      ctx.fillStyle = '#ffffff'
-      ctx.beginPath(); ctx.ellipse(ex, ey, 4, 2.5, 0, 0, Math.PI * 2); ctx.fill()
-      ctx.fillStyle = '#10b981'
-      ctx.beginPath(); ctx.ellipse(ex, ey, 2.5, 1.5, 0, 0, Math.PI * 2); ctx.fill()
+      // green almond eye
+      ctx.fillStyle = '#22c55e'
+      ctx.beginPath()
+      ctx.moveTo(ex - 4.5, ey)
+      ctx.quadraticCurveTo(ex, ey - 2.8, ex + 4.5, ey)
+      ctx.quadraticCurveTo(ex, ey + 2.8, ex - 4.5, ey)
+      ctx.closePath(); ctx.fill()
+      // black almond pupil
       ctx.fillStyle = '#111827'
-      ctx.fillRect(ex - 1, ey - 2, 2, 4)   // vertical slit pupil
+      ctx.beginPath()
+      ctx.moveTo(ex - 2.5, ey)
+      ctx.quadraticCurveTo(ex, ey - 2, ex + 2.5, ey)
+      ctx.quadraticCurveTo(ex, ey + 2, ex - 2.5, ey)
+      ctx.closePath(); ctx.fill()
     }
   } else if (dir === 'up') {
-    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54, 1.0)
+    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54, W_N)
   } else if (dir === 'down') {
-    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88, 2.0)
+    spr('walk-south', [19, 83, 147, 211][af4r], 30, 88, W_S)
   } else if (dir === 'right') {
-    spr('walk-east', [22, 86, 150, 214][af4r], 44, 61, 1.5)
+    spr('walk-east', [22, 86, 150, 214][af4r], 44, 61, W_E)
   } else {
-    spr('walk-west', [33, 97, 161, 225][af4r], 44, 69, 1.0)
+    spr('walk-west', [33, 97, 161, 225][af4r], 44, 69, W_W)
   }
 
   if (love > 0) {
