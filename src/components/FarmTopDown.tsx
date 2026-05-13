@@ -928,7 +928,7 @@ function updateCat(cat: CatState, map: Uint8Array, farmer: FarmerState, dt: numb
       } else if (roll < 0.9) {
         // Sit facing forward (30%)
         cat.anim = 'sit'; cat.dir = 'down'
-        cat.stateTimer = 3000 + Math.random()*4000
+        cat.stateTimer = 9000 + Math.random()*3000
       } else {
         // Self-clean (10%)
         cat.anim = 'clean'; cat.dir = 'down'
