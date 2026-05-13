@@ -675,6 +675,24 @@ const _catSprites: Record<string, _SpriteEntry> = {}
           if (y < H-1 && !visited[idx+W]) { visited[idx+W] = 1; queue.push(idx+W) }
         }
       }
+      // Remap to black-and-white; preserve pink (nose, toe beans)
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i+3] < 10) continue
+        const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255
+        const max = Math.max(r,g,b), min = Math.min(r,g,b), delta = max - min
+        const L = (max + min) / 2
+        let H = 0, Sat = 0
+        if (delta > 0) {
+          Sat = delta / (1 - Math.abs(2*L - 1))
+          if (max === r)      H = 60 * (((g - b) / delta) % 6)
+          else if (max === g) H = 60 * ((b - r) / delta + 2)
+          else                H = 60 * ((r - g) / delta + 4)
+          if (H < 0) H += 360
+        }
+        if (Sat > 0.25 && (H >= 310 || H <= 30)) continue  // pink — keep as-is
+        if (L > 0.68) { d[i] = 245; d[i+1] = 245; d[i+2] = 245 }  // light → white
+        else          { d[i] = 20;  d[i+1] = 20;  d[i+2] = 20  }  // else → black
+      }
       cx.putImageData(px, 0, 0)
       entry.canvas = c
     }
@@ -702,16 +720,13 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   // walk-west:  4 frames — x=33,97,161,225  w=44 h=69
   const af4r = 3 - af4  // reversed frame order fixes moonwalking
 
-  function spr(name: string, srcX: number, srcW: number, srcH: number) {
+  function spr(name: string, srcX: number, srcW: number, srcH: number, scale = 1.0) {
     const s = _catSprites[name]?.canvas
     if (!s) return
-    const dh = DH
+    const dh = DH * scale
     const dw = Math.round(dh * srcW / srcH)
     ctx.imageSmoothingEnabled = false
-    // Remap orange sprite → Link's original dark-navy palette
-    ctx.filter = 'hue-rotate(190deg) saturate(28%) brightness(40%)'
     ctx.drawImage(s, srcX, 0, srcW, srcH, Math.round(wx - dw/2), Math.round(wy - dh), dw, dh)
-    ctx.filter = 'none'
   }
 
   if (anim === 'sleep') {
@@ -725,14 +740,27 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     spr('cleaning', [19, 83, 147, 211][af4], 30, 57)
   } else if (anim === 'sit' || anim === 'idle' || anim === 'drink' || anim === 'eat') {
     spr('sitting', [11, 163, 315][CAT_SIT_COL[id]], 114, 181)
+    ctx.fillStyle = '#10b981'
+    ctx.fillRect(wx - 10, wy - 63, 2, 2)
+    ctx.fillRect(wx + 8,  wy - 63, 2, 2)
   } else if (dir === 'up') {
-    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54)
+    spr('walk-north', [28, 92, 156, 220][af4r], 30, 54, 1.5)
   } else if (dir === 'down') {
     spr('walk-south', [19, 83, 147, 211][af4r], 30, 88)
+    ctx.fillStyle = '#10b981'
+    ctx.fillRect(wx - 5, wy - 78, 2, 2)
+    ctx.fillRect(wx + 4, wy - 78, 2, 2)
   } else if (dir === 'right') {
     spr('walk-east', [22, 86, 150, 214][af4r], 44, 61)
+    ctx.fillStyle = '#10b981'
+    ctx.fillRect(wx + 23, wy - 60, 2, 2)
   } else {
     spr('walk-west', [33, 97, 161, 225][af4r], 44, 69)
+    ctx.fillStyle = '#10b981'
+    ctx.fillRect(wx - 21, wy - 60, 2, 2)
+    ctx.fillStyle = '#f9a8d4'
+    ctx.fillRect(wx - 20, wy - 10, 2, 2)
+    ctx.fillRect(wx - 14, wy - 7,  2, 2)
   }
 
   if (love > 0) {
