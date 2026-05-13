@@ -689,7 +689,7 @@ const _catSprites: Record<string, _SpriteEntry> = {}
           else                H = 60 * ((r - g) / delta + 4)
           if (H < 0) H += 360
         }
-        if (Sat > 0.25 && (H >= 330 || H <= 15)) continue  // pink — keep as-is (excludes orange hue 25-35°)
+        if (Sat > 0.25 && H >= 330) continue  // pink — keep as-is (cool rose 330-360°; orange/red-orange excluded)
         if (L > 0.68) { d[i] = 245; d[i+1] = 245; d[i+2] = 245 }  // light → white
         else if (Sat < 0.10 && L > 0.38) { d[i] = 160; d[i+1] = 160; d[i+2] = 160 }  // gray shadow → mid-gray
         else          { d[i] = 20;  d[i+1] = 20;  d[i+2] = 20  }  // else → black
