@@ -29,7 +29,7 @@ const SIGN_DEADLINE = new Date('2026-05-16T00:00:00').getTime()  // 6 days from 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Dir = 'down' | 'up' | 'left' | 'right'
 type CatAnim = 'idle' | 'walk' | 'sleep' | 'drink' | 'eat' | 'sit' | 'clean'
-type CatId = 'alco' | 'link'
+type CatId = 'link'
 
 interface Vec2 { x: number; y: number }
 
@@ -165,7 +165,7 @@ function saveLove(id: CatId, data: Partial<StoredLove>) {
 // ─── Init helpers ─────────────────────────────────────────────────────────────
 function initCat(id: CatId): CatState {
   const stored = loadLove(id)
-  const startX = id === 'alco' ? BARN_TX - 1 : BARN_TX + BARN_TW
+  const startX = BARN_TX + BARN_TW
   return {
     id, pos: { x: (startX + 0.5)*TS, y: (BARN_BOT + 2)*TS },
     target: { x: (startX + 0.5)*TS, y: (BARN_BOT + 2)*TS },
@@ -630,7 +630,7 @@ function drawFarmer(ctx: CanvasRenderingContext2D, wx: number, wy: number, dir: 
 }
 
 // ─── Cat sprite loader ────────────────────────────────────────────────────────
-// sitting.png  447×181  — 3 cats side-by-side (149px each): 0=orange(Link), 1=gray(Alco), 2=yellow
+// sitting.png  447×181  — 3 cats side-by-side (149px each): 0=orange(Link)
 // cleaning.png 259×57   — 4 frames
 // sleeping.png 161×65   — 2 frames
 // walk-north   288×54   — 4 frames (72px each)
@@ -683,7 +683,7 @@ const _catSprites: Record<string, _SpriteEntry> = {}
 })()
 
 // Which column in sitting.png to use per cat
-const CAT_SIT_COL: Record<CatId, number> = { alco: 1, link: 0 }
+const CAT_SIT_COL: Record<CatId, number> = { link: 0 }
 
 function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatId, dir: Dir, anim: CatAnim, frame: number, love: number) {
   const af4 = Math.floor(frame / 8) % 4
@@ -708,7 +708,10 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     const dh = DH
     const dw = Math.round(dh * srcW / srcH)
     ctx.imageSmoothingEnabled = false
+    // Remap orange sprite → Link's original dark-navy palette
+    ctx.filter = 'hue-rotate(190deg) saturate(28%) brightness(40%)'
     ctx.drawImage(s, srcX, 0, srcW, srcH, Math.round(wx - dw/2), Math.round(wy - dh), dw, dh)
+    ctx.filter = 'none'
   }
 
   if (anim === 'sleep') {
@@ -739,12 +742,12 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
 }
 
 // ─── Chat bubble ─────────────────────────────────────────────────────────────
-function drawChatBubble(ctx: CanvasRenderingContext2D, wx: number, wy: number, love: number, id: CatId) {
+function drawChatBubble(ctx: CanvasRenderingContext2D, wx: number, wy: number, love: number, _id: CatId) {
   const lines = [
-    love === 0 ? `${id === 'alco' ? 'Alco' : 'Link'} tolerates you.` : '',
-    love === 1 ? `${id === 'alco' ? 'Alco' : 'Link'} likes you! ❤️` : '',
-    love === 2 ? `${id === 'alco' ? 'Alco' : 'Link'} loves you! ❤️❤️` : '',
-    love === 3 ? `${id === 'alco' ? 'Alco' : 'Link'} adores you! ❤️❤️❤️` : '',
+    love === 0 ? `Link tolerates you.` : '',
+    love === 1 ? `Link likes you! ❤️` : '',
+    love === 2 ? `Link loves you! ❤️❤️` : '',
+    love === 3 ? `Link adores you! ❤️❤️❤️` : '',
   ].filter(Boolean)
   const text = lines[0] || ''
   const bw = 120, bh = 28
@@ -779,11 +782,11 @@ function drawHUD(ctx: CanvasRenderingContext2D, inventory: Record<string, number
 
   // Cat status panel top-right
   const px = CW - 150
-  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.roundRect(px, 8, 142, 68, 8); ctx.fill()
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.roundRect(px, 8, 142, 40, 8); ctx.fill()
   cats.forEach((cat, i) => {
     const cy = 28 + i*32
     ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'left'
-    ctx.fillText(cat.id === 'alco' ? '🐱 Alco' : '🐈 Link', px+8, cy)
+    ctx.fillText('🐈 Link', px+8, cy)
     const hearts = '❤️'.repeat(cat.love) + '🤍'.repeat(3 - cat.love)
     ctx.font = '10px serif'; ctx.fillText(hearts, px+8, cy+13)
     // Fed status
@@ -927,7 +930,7 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
         target: { x: (BARN_CX+0.5)*TS, y: (BARN_BOT+5)*TS },
         dir: 'up', frame: 0, moving: false,
       },
-      cats: [initCat('alco'), initCat('link')],
+      cats: [initCat('link')],
       cam: { x: 0, y: 0 },
       map,
       foodBowlFood: null,
