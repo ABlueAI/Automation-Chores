@@ -761,7 +761,7 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   } else if (dir === 'right') {
     spr('walk-east', [22, 86, 150, 214][af4r], 44, 61, 1.5)
   } else {
-    spr('walk-west', [33, 97, 161, 225][af4r], 44, 69, 1.5)
+    spr('walk-west', [33, 97, 161, 225][af4r], 44, 69, 1.0)
   }
 
   if (love > 0) {
@@ -873,7 +873,7 @@ function updateCat(cat: CatState, map: Uint8Array, farmer: FarmerState, dt: numb
     else cat.dir = dy > 0 ? 'down' : 'up'
   } else {
     cat.pos.x = tx; cat.pos.y = ty
-    if (cat.anim === 'walk') cat.anim = 'sit'
+    if (cat.anim === 'walk') { cat.anim = 'sit'; cat.stateTimer = 9000 + Math.random()*3000 }
   }
 
   // Change AI state when timer expires
