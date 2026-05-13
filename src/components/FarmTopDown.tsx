@@ -698,24 +698,6 @@ const _catSprites: Record<string, _SpriteEntry> = {}
         else if (sat < 0.10 && L > 0.38) { d[i]=160; d[i+1]=160; d[i+2]=160 }   // neutral gray → shadow
         else { d[i]=20; d[i+1]=20; d[i+2]=20 }                                    // else → black
       }
-      // White face for sitting sprite: direct pixel pass before putImageData.
-      // Top boundary is a parabola that dips down at center (V of black between eyes).
-      // curveY = 55 + 25*(1-t²) → 55 at edges, 80 at center.
-      if (name === 'sitting') {
-        for (const fcx of [68, 220, 372]) {
-          for (let sy = 55; sy < 105; sy++) {
-            for (let sx = fcx - 27; sx <= fcx + 27; sx++) {
-              if (sx < 0 || sx >= W) continue
-              const t = (sx - fcx) / 27
-              if (sy < 55 + 25 * (1 - t * t)) continue  // above the curve → stays black
-              const idx = (sy * W + sx) * 4
-              if (d[idx + 3] < 10) continue  // transparent → skip
-              d[idx] = 245; d[idx + 1] = 245; d[idx + 2] = 245
-            }
-          }
-        }
-      }
-
       cx.putImageData(px, 0, 0)
       entry.canvas = c
     }
