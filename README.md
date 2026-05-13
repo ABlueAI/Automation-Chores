@@ -34,8 +34,6 @@ A modern, responsive web and desktop application for managing office chores with
 
 ### Installation
 
-1. **Open the project directory** (already in `d:\Chore Tracking App`)
-
 2. **Install dependencies**:
    ```bash
    npm install
