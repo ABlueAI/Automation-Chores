@@ -699,6 +699,26 @@ const _catSprites: Record<string, _SpriteEntry> = {}
         else { d[i]=20; d[i+1]=20; d[i+2]=20 }                                    // else → black
       }
       cx.putImageData(px, 0, 0)
+
+      // For the sitting sprite, paint a white face region on each cat column.
+      // source-atop compositing ensures white only lands on non-transparent cat pixels.
+      // Top edge uses a concave curve (dips at center) → black fur bleeds down as a V between the eyes.
+      if (name === 'sitting') {
+        cx.save()
+        cx.globalCompositeOperation = 'source-atop'
+        cx.fillStyle = '#f0f0f0'
+        for (const fcx of [68, 220, 372]) {  // center x of each cat column (x=11,163,315 + half-width 57)
+          cx.beginPath()
+          cx.moveTo(fcx - 28, 55)
+          cx.quadraticCurveTo(fcx, 80, fcx + 28, 55)  // V of black bleeds down between eyes
+          cx.lineTo(fcx + 26, 165)
+          cx.lineTo(fcx - 26, 165)
+          cx.closePath()
+          cx.fill()
+        }
+        cx.restore()
+      }
+
       entry.canvas = c
     }
     img.src = base + 'cats/' + name + '.png'
@@ -726,7 +746,7 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const af4r = 3 - af4  // reversed frame order fixes moonwalking
 
   // Walk scale knobs — adjust all four in one place
-  const W_N = 1.0, W_S = 2.0, W_E = 1.5, W_W = 1.5
+  const W_N = 1.0, W_S = 2.0, W_E = 1.5, W_W = 2.0
 
   function spr(name: string, srcX: number, srcW: number, srcH: number, scale = 1.0) {
     const s = _catSprites[name]?.canvas
@@ -748,21 +768,21 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     spr('cleaning', [19, 83, 147, 211][af4], 30, 57)
   } else if (anim === 'sit' || anim === 'idle' || anim === 'drink' || anim === 'eat') {
     spr('sitting', [11, 163, 315][CAT_SIT_COL[id]], 114, 181)
-    for (const ex of [wx - 10, wx + 8]) {
+    for (const ex of [wx - 12, wx + 10]) {
       const ey = wy - 55
-      // green almond eye
+      // green almond eye (50% bigger: radii 6.75 × 4.2)
       ctx.fillStyle = '#22c55e'
       ctx.beginPath()
-      ctx.moveTo(ex - 4.5, ey)
-      ctx.quadraticCurveTo(ex, ey - 2.8, ex + 4.5, ey)
-      ctx.quadraticCurveTo(ex, ey + 2.8, ex - 4.5, ey)
+      ctx.moveTo(ex - 6.75, ey)
+      ctx.quadraticCurveTo(ex, ey - 4.2, ex + 6.75, ey)
+      ctx.quadraticCurveTo(ex, ey + 4.2, ex - 6.75, ey)
       ctx.closePath(); ctx.fill()
-      // black almond pupil
+      // vertical black almond pupil (tall and narrow)
       ctx.fillStyle = '#111827'
       ctx.beginPath()
-      ctx.moveTo(ex - 2.5, ey)
-      ctx.quadraticCurveTo(ex, ey - 2, ex + 2.5, ey)
-      ctx.quadraticCurveTo(ex, ey + 2, ex - 2.5, ey)
+      ctx.moveTo(ex, ey - 2.8)
+      ctx.quadraticCurveTo(ex + 1.2, ey, ex, ey + 2.8)
+      ctx.quadraticCurveTo(ex - 1.2, ey, ex, ey - 2.8)
       ctx.closePath(); ctx.fill()
     }
   } else if (dir === 'up') {
