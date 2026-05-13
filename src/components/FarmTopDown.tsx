@@ -711,8 +711,8 @@ const _catSprites: Record<string, _SpriteEntry> = {}
           cx.beginPath()
           cx.moveTo(fcx - 28, 55)
           cx.quadraticCurveTo(fcx, 80, fcx + 28, 55)  // V of black bleeds down between eyes
-          cx.lineTo(fcx + 26, 165)
-          cx.lineTo(fcx - 26, 165)
+          cx.lineTo(fcx + 26, 105)
+          cx.lineTo(fcx - 26, 105)
           cx.closePath()
           cx.fill()
         }
@@ -746,7 +746,7 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const af4r = 3 - af4  // reversed frame order fixes moonwalking
 
   // Walk scale knobs — adjust all four in one place
-  const W_N = 1.0, W_S = 2.0, W_E = 1.5, W_W = 2.0
+  const W_N = 2.0, W_S = 2.0, W_E = 2.0, W_W = 2.0
 
   function spr(name: string, srcX: number, srcW: number, srcH: number, scale = 1.0) {
     const s = _catSprites[name]?.canvas
