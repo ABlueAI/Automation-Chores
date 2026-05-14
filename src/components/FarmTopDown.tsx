@@ -726,7 +726,7 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
   const af4r = 3 - af4  // reversed frame order fixes moonwalking
 
   // Walk scale knobs — adjust all four in one place
-  const W_N = 1.5, W_S = 2.5, W_E = 1.5, W_W = 2.0
+  const W_N = 1.5, W_S = 2.5, W_E = 1.875, W_W = 2.0
 
   function spr(name: string, srcX: number, srcW: number, srcH: number, scale = 1.0) {
     const s = _catSprites[name]?.canvas
@@ -750,19 +750,19 @@ function drawCat(ctx: CanvasRenderingContext2D, wx: number, wy: number, id: CatI
     spr('sitting', [11, 163, 315][CAT_SIT_COL[id]], 114, 181)
     for (const ex of [wx - 12, wx + 10]) {
       const ey = wy - 55
-      // green almond eye (50% bigger: radii 6.75 × 4.2)
+      // green vertical almond eye (narrow width, tall height)
       ctx.fillStyle = '#22c55e'
       ctx.beginPath()
-      ctx.moveTo(ex - 6.75, ey)
-      ctx.quadraticCurveTo(ex, ey - 4.2, ex + 6.75, ey)
-      ctx.quadraticCurveTo(ex, ey + 4.2, ex - 6.75, ey)
+      ctx.moveTo(ex, ey - 6.0)
+      ctx.quadraticCurveTo(ex + 3.5, ey, ex, ey + 6.0)
+      ctx.quadraticCurveTo(ex - 3.5, ey, ex, ey - 6.0)
       ctx.closePath(); ctx.fill()
-      // vertical black almond pupil (tall and narrow)
+      // vertical black almond pupil
       ctx.fillStyle = '#111827'
       ctx.beginPath()
-      ctx.moveTo(ex, ey - 2.8)
-      ctx.quadraticCurveTo(ex + 1.2, ey, ex, ey + 2.8)
-      ctx.quadraticCurveTo(ex - 1.2, ey, ex, ey - 2.8)
+      ctx.moveTo(ex, ey - 3.8)
+      ctx.quadraticCurveTo(ex + 1.2, ey, ex, ey + 3.8)
+      ctx.quadraticCurveTo(ex - 1.2, ey, ex, ey - 3.8)
       ctx.closePath(); ctx.fill()
     }
   } else if (dir === 'up') {
