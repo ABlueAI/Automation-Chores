@@ -10,7 +10,7 @@ interface Props {
 }
 
 const GroceryView: React.FC<Props> = ({ onGoToChores }) => {
-  const { items, loading, addItem, removeItem, toggleItem, clearChecked, clearAll } = useGrocery()
+  const { items, loading, connectionError, addItem, removeItem, toggleItem, clearChecked, clearAll } = useGrocery()
 
   const [nameInput, setNameInput] = useState('')
   const [qtyInput, setQtyInput] = useState('')
@@ -105,6 +105,12 @@ const GroceryView: React.FC<Props> = ({ onGoToChores }) => {
           </div>
         </div>
       </header>
+
+      {connectionError && (
+        <div className="sync-banner">
+          ⚠️ Can't reach the household database — changes won't sync. Check your connection and reopen the app.
+        </div>
+      )}
 
       <div className="grocery-container">
         {/* Add Item Panel */}

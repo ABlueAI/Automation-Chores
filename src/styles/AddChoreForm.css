@@ -16,7 +16,7 @@
   box-shadow: var(--shadow-lg);
   max-width: 520px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 85dvh; /* dvh: leaves room when the iOS keyboard shrinks the viewport */
   overflow-y: auto;
   border: 1px solid var(--border-color);
 }
@@ -88,10 +88,10 @@ form {
 .form-group input,
 .form-group textarea,
 .form-group select {
-  padding: 9px 12px;
+  padding: 11px 12px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16px; /* <16px makes iOS Safari zoom in on focus */
   background: var(--card-bg);
   color: var(--text-primary);
   transition: all 0.15s ease;
@@ -121,7 +121,7 @@ form {
 }
 
 .btn-cancel {
-  padding: 9px 16px;
+  padding: 12px 18px;
   background: var(--lighter-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
@@ -138,7 +138,7 @@ form {
 }
 
 .btn-submit {
-  padding: 9px 18px;
+  padding: 12px 20px;
   background: var(--primary-color);
   color: white;
   border: none;

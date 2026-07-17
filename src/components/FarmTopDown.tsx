@@ -1157,7 +1157,7 @@ export default function FarmTopDown({ onBack, onLaunchRunner, inventory, onFeedC
   }, [])
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#1a1a2e', overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'calc(100dvh - var(--tabbar-h))', background:'#1a1a2e', overflow:'hidden', paddingTop:'env(safe-area-inset-top)' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', height:'44px', background:'rgba(0,0,0,0.6)', flexShrink:0, gap:12 }}>
         <button onClick={onBack} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:7, color:'white', cursor:'pointer', fontSize:13 }}>
           <ArrowLeft size={14}/> Chores

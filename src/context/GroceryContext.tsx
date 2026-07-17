@@ -16,6 +16,8 @@ export interface GroceryItem {
 interface GroceryContextType {
   items: GroceryItem[]
   loading: boolean
+  /* true when the household database can't be reached — surfaced as a banner, never silent */
+  connectionError: boolean
   addItem: (name: string, quantity: string) => void
   removeItem: (id: string) => void
   toggleItem: (id: string) => void
@@ -60,13 +62,40 @@ function itemToRow(item: GroceryItem) {
 export const GroceryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<GroceryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [connectionError, setConnectionError] = useState(false)
 
   useEffect(() => {
-    supabase.from('grocery_items').select('*').then(({ data, error }) => {
-      if (error) console.error('load grocery_items:', error)
-      if (data) setItems(data.map(rowToItem))
-      setLoading(false)
-    })
+    const load = async () => {
+      try {
+        const { data, error } = await supabase.from('grocery_items').select('*')
+        if (error) console.error('load grocery_items:', error)
+        if (data) setItems(data.map(rowToItem))
+        setConnectionError(Boolean(error))
+      } catch (e) {
+        // network failure rejects the fetch — open the UI with the sync banner instead of hanging
+        console.error('load grocery_items failed:', e)
+        setConnectionError(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+
+    // Shared list between two phones: refetch on remote writes and on app foregrounding
+    const channel = supabase
+      .channel('grocery-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'grocery_items' }, () => load())
+      .subscribe()
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      supabase.removeChannel(channel)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   const addItem = (name: string, quantity: string) => {
@@ -121,7 +150,7 @@ export const GroceryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }
 
   return (
-    <GroceryContext.Provider value={{ items, loading, addItem, removeItem, toggleItem, clearChecked, clearAll }}>
+    <GroceryContext.Provider value={{ items, loading, connectionError, addItem, removeItem, toggleItem, clearChecked, clearAll }}>
       {children}
     </GroceryContext.Provider>
   )

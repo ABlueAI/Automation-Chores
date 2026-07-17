@@ -1,6 +1,21 @@
-# Office Chore Tracker
+# Chore Tracker
 
-A modern, responsive web and desktop application for managing office chores with team assignment, recurring tasks, and visual tracking.
+A mobile-first PWA for one shared household: chores, grocery list, and a cat farm. Built for two phones sharing live data through Supabase — no App Store, installed straight from the browser.
+
+## Install on iPhone
+
+1. Open **https://ablueai.github.io/Automation-Chores/** in **Safari**
+2. Tap the **Share** button → **Add to Home Screen** → **Add**
+3. The two-cats icon appears on the home screen and opens full-screen like a native app
+
+Both phones use the same link — all chores, groceries, and tokens sync live.
+
+## Backend (Supabase)
+
+- One Supabase project holds `chores`, `team_members`, and `grocery_items` (schema in [`supabase/schema.sql`](supabase/schema.sql))
+- Local dev needs `.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`; deploys read the same values from GitHub repo secrets
+- **Free-tier projects pause after inactivity** — if the app shows the red "can't reach the household database" banner, restore the project in the Supabase dashboard
+- If the project is gone entirely: create a new one, run `supabase/schema.sql` in its SQL editor, and update `.env` + both repo secrets. Realtime sync requires the `alter publication supabase_realtime` lines at the bottom of that file
 
 ## Features
 
@@ -23,7 +38,8 @@ A modern, responsive web and desktop application for managing office chores with
 - **Styling**: CSS3 with CSS variables
 - **Icons**: Lucide React
 - **State Management**: React Context API
-- **Storage**: Browser localStorage
+- **Storage**: Supabase (shared household data) + localStorage (theme, farm inventory)
+- **PWA**: vite-plugin-pwa (manifest + service worker), installable on iOS
 
 ## Getting Started
 

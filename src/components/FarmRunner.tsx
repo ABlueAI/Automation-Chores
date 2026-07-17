@@ -167,7 +167,7 @@ export default function FarmRunner({ onBack, onEarnFood }: Props) {
   // ── Game over screen ──────────────────────────────────────────────────────
   if (phase === 'over') {
     return (
-      <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'linear-gradient(160deg,#1a2e1a 0%,#2d5a2d 100%)', alignItems:'center', justifyContent:'center', gap:0, padding:24 }}>
+      <div style={{ display:'flex', flexDirection:'column', minHeight:'calc(100dvh - var(--tabbar-h))', background:'linear-gradient(160deg,#1a2e1a 0%,#2d5a2d 100%)', alignItems:'center', justifyContent:'center', gap:0, padding:24 }}>
         <div style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', borderRadius:24, padding:36, textAlign:'center', maxWidth:360, width:'100%' }}>
           <div style={{ fontSize:72, marginBottom:8 }}>{earnedFood?.emoji ?? '🎉'}</div>
           <h2 style={{ color:'#fde68a', margin:'0 0 6px', fontSize:26, fontWeight:800 }}>Farm Crush!</h2>
@@ -193,7 +193,7 @@ export default function FarmRunner({ onBack, onEarnFood }: Props) {
 
   // ── Game screen ───────────────────────────────────────────────────────────
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'linear-gradient(160deg,#1a2e1a 0%,#2d5a2d 100%)', overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'calc(100dvh - var(--tabbar-h))', background:'linear-gradient(160deg,#1a2e1a 0%,#2d5a2d 100%)', overflow:'hidden', paddingTop:'env(safe-area-inset-top)' }}>
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', height:52, background:'rgba(0,0,0,0.5)', flexShrink:0, gap:12 }}>
         <button onClick={onBack} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'white', cursor:'pointer', fontSize:13 }}>

@@ -5,21 +5,26 @@ import { GroceryProvider } from './context/GroceryContext'
 import ChoreApp from './pages/ChoreApp'
 import GroceryView from './components/GroceryView'
 import FarmView from './components/FarmView'
+import MobileTabBar, { Page } from './components/MobileTabBar'
 import './App.css'
 
 function App() {
-  const [page, setPage] = useState<'chores' | 'grocery' | 'farm'>('chores')
+  const [page, setPage] = useState<Page>('chores')
 
   return (
     <NotificationProvider>
       <ChoreProvider>
         <GroceryProvider>
-          {page === 'chores'
-            ? <ChoreApp onGoToGrocery={() => setPage('grocery')} onGoToFarm={() => setPage('farm')} />
-            : page === 'grocery'
-            ? <GroceryView onGoToChores={() => setPage('chores')} />
-            : <FarmView onGoToChores={() => setPage('chores')} />
-          }
+          {/* chores + calendar are one component so date/view state survives tab switches */}
+          {(page === 'chores' || page === 'calendar') && (
+            <ChoreApp
+              tab={page === 'calendar' ? 'calendar' : 'list'}
+              onDatePicked={() => setPage('chores')}
+            />
+          )}
+          {page === 'grocery' && <GroceryView onGoToChores={() => setPage('chores')} />}
+          {page === 'farm' && <FarmView onGoToChores={() => setPage('chores')} />}
+          <MobileTabBar page={page} onChange={setPage} />
         </GroceryProvider>
       </ChoreProvider>
     </NotificationProvider>

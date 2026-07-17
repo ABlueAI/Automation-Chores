@@ -10,42 +10,23 @@ import { NotificationContainer } from '../components/NotificationContainer'
 import { ConfettiCelebration } from '../components/ConfettiCelebration'
 import { getDateString, groupChoresByDate } from '../utils/dateUtils'
 import { getCompletionStats } from '../utils/choreUtils'
+import { DatePicker } from '../components/DatePicker'
 import '../styles/ChoreApp.css'
-import { Plus, Users, Download, Moon, Sun, Calendar, ShoppingCart } from 'lucide-react'
-
-function BarnCatIcon() {
-  return (
-    <svg width="18" height="16" viewBox="0 0 26 22" fill="currentColor">
-      {/* Barn body */}
-      <rect x="1" y="11" width="15" height="11" rx="1"/>
-      {/* Barn roof */}
-      <polygon points="0,12 8.5,4 17,12"/>
-      {/* Barn door */}
-      <rect x="5.5" y="15" width="4" height="7" fill="white" opacity="0.25" rx="0.5"/>
-      {/* Cat body beside barn */}
-      <ellipse cx="22" cy="17" rx="4" ry="3.5"/>
-      {/* Cat head */}
-      <circle cx="22" cy="12" r="3.8"/>
-      {/* Cat ears */}
-      <polygon points="19,10 18,7.5 21,10"/>
-      <polygon points="25,10 26,7.5 23,10"/>
-      {/* Cat eyes */}
-      <circle cx="20.8" cy="11.5" r="0.8" fill="white"/>
-      <circle cx="23.2" cy="11.5" r="0.8" fill="white"/>
-    </svg>
-  )
-}
+import { Plus, Download, Moon, Sun, Calendar } from 'lucide-react'
 
 interface Props {
-  onGoToGrocery: () => void
-  onGoToFarm: () => void
+  /* 'list' = chores tab, 'calendar' = calendar + team tab; one component so state survives tab switches */
+  tab: 'list' | 'calendar'
+  /* called after picking a calendar date so the app can jump to the chores tab */
+  onDatePicked: () => void
 }
 
-export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
+export default function ChoreApp({ tab, onDatePicked }: Props) {
   const {
     chores,
     teamMembers,
     loading,
+    connectionError,
     addChore,
     updateChore,
     deleteChore,
@@ -59,7 +40,6 @@ export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
 
   const [selectedDate, setSelectedDate] = useState(getDateString(new Date()))
   const [showAddForm, setShowAddForm] = useState(false)
-  const [showTeamManager, setShowTeamManager] = useState(false)
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'all'>('day')
   const [editingChore, setEditingChore] = useState<Chore | null>(null)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
@@ -209,7 +189,7 @@ export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
       <header className="app-header">
         <div className="header-content">
           <div className="header-title">
-            <h1>Office Chore Tracker</h1>
+            <h1>{tab === 'calendar' ? 'Calendar' : 'Chore Tracker'}</h1>
             <div className="stats">
               <span className="stat">
                 <span className="stat-num">{stats.total}</span> Total
@@ -230,94 +210,78 @@ export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
 
           <div className="header-actions">
             <button
-              className="btn-header"
+              className="btn-header btn-header-icon"
               onClick={() => setDarkMode(d => !d)}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
-              className="btn-header"
+              className="btn-header btn-header-icon"
               onClick={exportToCSV}
               title="Export to CSV"
               disabled={chores.length === 0}
             >
-              <Download size={16} /> Export
-            </button>
-            <button
-              className="btn-header"
-              onClick={onGoToFarm}
-              title="Go to Our Farm"
-            >
-              <BarnCatIcon /> Farm
-            </button>
-            <button
-              className="btn-header"
-              onClick={onGoToGrocery}
-              title="Go to Grocery List"
-            >
-              <ShoppingCart size={16} /> Grocery
-            </button>
-            <button
-              className="btn-header"
-              onClick={() => setShowTeamManager(v => !v)}
-            >
-              <Users size={16} /> Team
-            </button>
-            <button
-              className="btn-header btn-header-primary"
-              onClick={() => setShowAddForm(true)}
-              disabled={teamMembers.length === 0}
-              title={teamMembers.length === 0 ? 'Add team members first' : 'Add new chore'}
-            >
-              <Plus size={16} /> Add Chore
+              <Download size={18} />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="app-container">
-        <aside className="sidebar">
+      {connectionError && (
+        <div className="sync-banner">
+          ⚠️ Can't reach the household database — changes won't sync. Check your connection and reopen the app.
+        </div>
+      )}
+
+      {tab === 'calendar' && (
+        <div className="app-container calendar-tab">
           <CalendarView
             selectedDate={selectedDate}
-            onDateChange={date => { setSelectedDate(date); setViewMode('day') }}
+            onDateChange={date => {
+              setSelectedDate(date)
+              setViewMode('day')
+              onDatePicked()
+            }}
             chores={chores}
           />
 
-          <div className="view-modes">
-            <h3>View</h3>
-            <div className="mode-buttons">
-              <button
-                className={`mode-btn ${viewMode === 'day' ? 'active' : ''}`}
-                onClick={() => setViewMode('day')}
-              >
-                <Calendar size={15} /> Day
-              </button>
-              <button
-                className={`mode-btn ${viewMode === 'week' ? 'active' : ''}`}
-                onClick={() => setViewMode('week')}
-              >
-                📅 Week
-              </button>
-              <button
-                className={`mode-btn ${viewMode === 'all' ? 'active' : ''}`}
-                onClick={() => setViewMode('all')}
-              >
-                📊 All
-              </button>
-            </div>
+          <TeamMemberManager
+            members={teamMembers}
+            onAdd={handleAddTeamMember}
+            onRemove={handleRemoveTeamMember}
+          />
+        </div>
+      )}
+
+      {tab === 'list' && (
+      <div className="app-container">
+        <main className="main-content">
+          <div className="mode-buttons list-mode-row">
+            <button
+              className={`mode-btn ${viewMode === 'day' ? 'active' : ''}`}
+              onClick={() => setViewMode('day')}
+            >
+              <Calendar size={15} /> Day
+            </button>
+            <button
+              className={`mode-btn ${viewMode === 'week' ? 'active' : ''}`}
+              onClick={() => setViewMode('week')}
+            >
+              📅 Week
+            </button>
+            <button
+              className={`mode-btn ${viewMode === 'all' ? 'active' : ''}`}
+              onClick={() => setViewMode('all')}
+            >
+              📊 All
+            </button>
           </div>
 
-          {showTeamManager && (
-            <TeamMemberManager
-              members={teamMembers}
-              onAdd={handleAddTeamMember}
-              onRemove={handleRemoveTeamMember}
-            />
+          {viewMode !== 'all' && (
+            <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} />
           )}
-        </aside>
 
-        <main className="main-content">
           <SearchFilter
             filters={filters}
             onChange={setFilters}
@@ -382,6 +346,19 @@ export default function ChoreApp({ onGoToGrocery, onGoToFarm }: Props) {
           )}
         </main>
       </div>
+      )}
+
+      {tab === 'list' && (
+        <button
+          className="fab-add"
+          onClick={() => setShowAddForm(true)}
+          disabled={teamMembers.length === 0}
+          title={teamMembers.length === 0 ? 'Add team members first (Calendar tab)' : 'Add new chore'}
+          aria-label="Add chore"
+        >
+          <Plus size={26} strokeWidth={2.6} />
+        </button>
+      )}
 
       {celebration && (
         <ConfettiCelebration

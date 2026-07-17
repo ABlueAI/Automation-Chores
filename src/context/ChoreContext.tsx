@@ -34,6 +34,8 @@ interface ChoreContextType {
   chores: Chore[]
   teamMembers: TeamMember[]
   loading: boolean
+  /* true when the household database can't be reached — surfaced as a banner, never silent */
+  connectionError: boolean
   addChore: (chore: Omit<Chore, 'id' | 'createdAt'>) => void
   updateChore: (id: string, updates: Partial<Chore>) => void
   deleteChore: (id: string) => void
@@ -140,20 +142,48 @@ export const ChoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [chores, setChores] = useState<Chore[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
+  const [connectionError, setConnectionError] = useState(false)
 
   useEffect(() => {
     async function load() {
-      const [{ data: choresData, error: ce }, { data: membersData, error: me }] = await Promise.all([
-        supabase.from('chores').select('*'),
-        supabase.from('team_members').select('*'),
-      ])
-      if (ce) console.error('load chores:', ce)
-      if (me) console.error('load members:', me)
-      if (choresData) setChores(choresData.map(rowToChore))
-      if (membersData) setTeamMembers(membersData.map(rowToMember))
-      setLoading(false)
+      try {
+        const [{ data: choresData, error: ce }, { data: membersData, error: me }] = await Promise.all([
+          supabase.from('chores').select('*'),
+          supabase.from('team_members').select('*'),
+        ])
+        if (ce) console.error('load chores:', ce)
+        if (me) console.error('load members:', me)
+        if (choresData) setChores(choresData.map(rowToChore))
+        if (membersData) setTeamMembers(membersData.map(rowToMember))
+        setConnectionError(Boolean(ce || me))
+      } catch (e) {
+        // network failure (offline / Supabase unreachable) rejects the fetch —
+        // open the UI anyway and show the sync banner instead of hanging on the spinner
+        console.error('load failed:', e)
+        setConnectionError(true)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
+
+    // Two phones share one household: refetch whenever the other phone writes,
+    // and whenever this PWA comes back to the foreground from the home screen.
+    const channel = supabase
+      .channel('chores-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chores' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' }, () => load())
+      .subscribe()
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      supabase.removeChannel(channel)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   const generateRecurringChores = (baseChore: Chore, count = 12): Chore[] => {
@@ -265,7 +295,7 @@ export const ChoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ChoreContext.Provider
       value={{
-        chores, teamMembers, loading, addChore, updateChore, deleteChore, completeChore,
+        chores, teamMembers, loading, connectionError, addChore, updateChore, deleteChore, completeChore,
         addTeamMember, removeTeamMember, getChoresForDate, getChoresForMember,
       }}
     >
